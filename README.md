@@ -52,7 +52,13 @@ As it is, qemu is configured to wait for a connection (usually from gdb).
 
 To prevent this behavior, you need to change a line in **qemu.sh**.
 
+Change this line:
 
+` qemu-system-$(./target-triplet-to-arch.sh $HOST) -s -S -cdrom rinix.iso `
+
+To this:
+
+` qemu-system-$(./target-triplet-to-arch.sh $HOST) -cdrom rinix.iso '
 
 ### Contribution guidelines ###
 
