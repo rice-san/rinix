@@ -5,6 +5,10 @@ TODO List:
 * Completely handle interupts (rather than simply halting)
 
 
+v0.0.3 - Basic Paging
++ Higher Half Kernel
++ Basic Pages
+
 v0.0.2 - Functional Release <Alpha>:
 + Completed x86 IDT Loader
 + Added integer support for printf() function
