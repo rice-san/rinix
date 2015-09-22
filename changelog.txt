@@ -1,0 +1,20 @@
+TODO List:
+
+* Finish Standard Libraries
+* Build IRQs
+* Completely handle interupts (rather than simply halting)
+
+
+v0.0.2 - Functional Release <Alpha>:
++ Completed x86 IDT Loader
++ Added integer support for printf() function
+
+
+v0.0.1 - Initial Release <Alpha>:
++ Created All Core Files
++ Created Build Scripts
++ Added x86 Boot Source Code
++ Added x86 Terminal Text-Mode Driver
++ Added x86 GDT Loader
++ Added x86 IDT Loader
++ Added Standard Libraries: <stdio.h>, <stdlib.h>, <string.h>
