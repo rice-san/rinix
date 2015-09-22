@@ -8,6 +8,11 @@
  * 
  * */
 
+static inline void _flush_tlb(unsigned long addr)
+{
+   asm volatile("invlpg (%0)" ::"r" (addr) : "memory");
+}
+
 void page_init(uintptr_t address)
 {
 	pd_address = address;
@@ -18,7 +23,7 @@ void page_init(uintptr_t address)
 
 uintptr_t get_pgt_entry(uintptr_t virt)
 {
-	uintptr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGMT_BITS - _PGLT_BITS - _PGOFFSET_BITS));
+	uintptr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGDT_BITS));
 	
 	pd = (uintptr_t *)pd_address;
 	
@@ -29,8 +34,8 @@ uintptr_t get_pmt_entry(uintptr_t virt)
 {
 	uintptr_t* pm;
 	
-	uintptr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGMT_BITS - _PGLT_BITS - _PGOFFSET_BITS));
-	uintptr_t pm_select = ((virt & _PGMT_MASK) >> (ADDR_BITS - _PGLT_BITS - _PGOFFSET_BITS));
+	uintptr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGDT_BITS));
+	uintptr_t pm_select = ((virt & _PGMT_MASK) >> (ADDR_BITS - _PGDT_BITS - _PGMT_BITS));
 	
 	pd = (uintptr_t *)pd_address;
 	
@@ -49,9 +54,9 @@ uintptr_t get_pt_entry(uintptr_t virt)
 	
 	virt = (virt & (~_PGOFFSET_BITS));
 	
-	uintptr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGMT_BITS - _PGLT_BITS - _PGOFFSET_BITS));
-	uintptr_t pm_select = ((virt & _PGMT_MASK) >> (ADDR_BITS - _PGLT_BITS - _PGOFFSET_BITS));
-	uintptr_t pt_select = ((virt & _PGLT_MASK) >> (ADDR_BITS - _PGOFFSET_BITS));
+	uintptr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGDT_BITS));
+	uintptr_t pm_select = ((virt & _PGMT_MASK) >> (ADDR_BITS - _PGDT_BITS - _PGMT_BITS));
+	uintptr_t pt_select = ((virt & _PGLT_MASK) >> (ADDR_BITS - _PGDT_BITS - _PGMT_BITS - _PGLT_BITS));
 	
 	pd = (uintptr_t *)pd_address;
 	
@@ -64,6 +69,7 @@ uintptr_t get_pt_entry(uintptr_t virt)
 	{
 		pt = (uintptr_t *)pd[pg_select];
 	}
+	
 	return pt[pt_select];
 }
 
@@ -71,7 +77,7 @@ uintptr_t get_pt_entry(uintptr_t virt)
 
 void set_pgt_entry(uintptr_t virt, uintptr_t value)
 {
-	uintptr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGMT_BITS - _PGLT_BITS - _PGOFFSET_BITS));
+	uintptr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGDT_BITS));
 	
 	pd = (uintptr_t *)pd_address;
 	
@@ -82,8 +88,8 @@ void set_pmt_entry(uintptr_t virt, uintptr_t value)
 {
 	uintptr_t* pm;
 	
-	uintptr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGMT_BITS - _PGLT_BITS - _PGOFFSET_BITS));
-	uintptr_t pm_select = ((virt & _PGMT_MASK) >> (ADDR_BITS - _PGLT_BITS - _PGOFFSET_BITS));
+	uintptr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGDT_BITS));
+	uintptr_t pm_select = ((virt & _PGMT_MASK) >> (ADDR_BITS - _PGDT_BITS - _PGMT_BITS));
 	
 	pd = (uintptr_t *)pd_address;
 	
@@ -102,9 +108,9 @@ void set_pt_entry(uintptr_t virt, uintptr_t value)
 	
 	virt = (virt & (~_PGOFFSET_BITS));
 	
-	uintptr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGMT_BITS - _PGLT_BITS - _PGOFFSET_BITS));
-	uintptr_t pm_select = ((virt & _PGMT_MASK) >> (ADDR_BITS - _PGLT_BITS - _PGOFFSET_BITS));
-	uintptr_t pt_select = ((virt & _PGLT_MASK) >> (ADDR_BITS - _PGOFFSET_BITS));
+	uintptr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGDT_BITS));
+	uintptr_t pm_select = ((virt & _PGMT_MASK) >> (ADDR_BITS - _PGDT_BITS - _PGMT_BITS));
+	uintptr_t pt_select = ((virt & _PGLT_MASK) >> (ADDR_BITS - _PGDT_BITS - _PGMT_BITS - _PGLT_BITS));
 	
 	pd = (uintptr_t *)pd_address;
 	
@@ -117,5 +123,7 @@ void set_pt_entry(uintptr_t virt, uintptr_t value)
 	{
 		pt = (uintptr_t *)pd[pg_select];
 	}
+	
 	pt[pt_select] = value;
+	_flush_tlb(virt);
 }

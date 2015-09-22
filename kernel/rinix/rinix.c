@@ -47,8 +47,8 @@ void kmain(void)
 	// printf("Architecture: %s\n", ARCH_NAME);
 	printf("Page Directory is at address: %x\n", initialPageDirectory);
 	printf("Kernel Ends at: %x\n", &kernel_end);
-	// set_pgt_entry(0, 0);
+	set_pgt_entry(0, 0);
 	printf("%x\n", get_pgt_entry(0));
-	printf("%x\n", get_pgt_entry(0xC000000));
+	printf("%x\n", get_pgt_entry(0xC0000000));
 	for(;;);
 }
