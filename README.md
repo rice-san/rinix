@@ -58,7 +58,7 @@ Change this line:
 
 To this:
 
-` qemu-system-$(./target-triplet-to-arch.sh $HOST) -cdrom rinix.iso '
+` qemu-system-$(./target-triplet-to-arch.sh $HOST) -cdrom rinix.iso `
 
 ### Contribution guidelines ###
 
