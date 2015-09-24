@@ -3,6 +3,8 @@
 
 #include <asm/io.h>
 
+#include <rinix/pause.h>
+
 #include "irq.h"
 #include "regs.h"
 
@@ -10,6 +12,7 @@
 #define CAPSLOCK(flag) (flag & 0x40) // 01|00|00|00
 #define NUMLOCK(flag) (flag & 0x20) // 00|10|00|00
 #define SCROLLLOCK(flag) (flag & 0x10) // 00|01|00|00
+
 
 
 /* TODO: Add Flag Bits for CAPS LOCK, NUMS LOCK, and SCROLL LOCK */
@@ -163,7 +166,10 @@ void keyboard_handler(struct regs *r)
         /* Here, a key was just pressed. Please note that if you
         *  hold a key down, you will get repeated key press
         *  interrupts. */
-
+		if (pause_flag == 1)
+		{
+				pause_flag = 0;
+		}
         /* Just to show you how this works, we simply translate
         *  the keyboard scancode into an ASCII value, and then
         *  display it to the screen. You can get creative and

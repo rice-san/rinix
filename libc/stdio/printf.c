@@ -63,6 +63,40 @@ static void utoa(unsigned int num, char *buffer, int base)
 	reverse(buffer);
 }
 
+static void ltoa(long num, char *buffer, int base)
+{
+	if(base <= 0 || base > 35)
+		return;
+	
+	int i, sign;
+	
+	char *digits = "0123456789abcdefghijklmnopqrstuvwxyz"; //Base can be from 1-35;
+	
+	// Go to work
+	do {
+		buffer[i++] = digits[num % base];
+	}while ((num /= base) > 0);
+	buffer[i] = '\0';
+	reverse(buffer);
+}
+
+static void ultoa(unsigned long num, char *buffer, int base)
+{
+	if(base <= 0 || base > 35)
+		return;
+	
+	int i, sign;
+	
+	char *digits = "0123456789abcdefghijklmnopqrstuvwxyz"; //Base can be from 1-35;
+	
+	// Go to work
+	do {
+		buffer[i++] = digits[num % base];
+	}while ((num /= base) > 0);
+	buffer[i] = '\0';
+	reverse(buffer);
+}
+
 int printf(const char* restrict format, ...)
 {
 		va_list parameters;
@@ -111,7 +145,7 @@ int printf(const char* restrict format, ...)
 						const char* s = va_arg(parameters, const char*);
 						print(s, strlen(s));
 				}
-				else if ( *format == 'd' || *format == 'i' || *format == 'o' || *format == 'x' ) {
+				else if ( *format == 'd' || *format == 'i' || *format == 'o') {
 						int i = va_arg(parameters, int);
 						int radius;
 						if (*format == 'd' || *format == 'i')
@@ -121,11 +155,6 @@ int printf(const char* restrict format, ...)
 						else if (*format == 'o')
 						{
 							radius = 8;
-						}
-						else if (*format == 'x')
-						{
-							radius = 16;
-							print("0x", (size_t)2);
 						}
 						else
 						{
@@ -140,6 +169,31 @@ int printf(const char* restrict format, ...)
 						else
 						{
 							utoa(i, s, radius);
+						}
+						print(s, strlen(s));
+				}
+				else if ( *format == 'x' || *format == 'l' )
+				{
+						long l = va_arg(parameters, long);
+						int radius;
+						if (*format == 'x')
+						{
+							radius = 16;
+							print("0x", (size_t)2);
+						}
+						else
+						{
+							radius = 10;
+						}
+						format++;
+						char s[64];
+						if (radius == 10)
+						{
+							ltoa(l, s, radius);
+						}
+						else
+						{
+							ultoa(l, s, radius);
 						}
 						print(s, strlen(s));
 				}

@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+extern kernel_start;
 extern kernel_end;
 
 uintptr_t pd_address;

@@ -8,9 +8,8 @@
 // buddy.h - Buddy Allocator
 
 typedef struct buddy {
-	uintptr_t address;
 	struct buddy* next;
-	struct buddy* prev;
+	uint32_t bit;
 } buddy_t;
 
 void buddy_build(multiboot_info_t* mbd);

@@ -22,6 +22,7 @@ SECTIONS
 	Next we'll put the .text section. */
 	.text ALIGN(4K) : AT(ADDR(.text) - offset)
 	{
+		kernel_start = .;
 		core_start = .;
 		*(EXCLUDE_FILE (*/boot.o) .text)
 		*(.rodata*)
