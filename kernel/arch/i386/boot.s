@@ -95,7 +95,9 @@ _start:
 	# Pass the address of the initial page table on the stack
 	push $_initialPD
 	# Pass the multiboot information onto the stack.
-	push %ebp
+	push %ebx
+	
+	
 	
 	# Initialize the core kernel before running global constructors
 	call initk
