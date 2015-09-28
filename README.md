@@ -48,17 +48,11 @@ And then start qemu by writing:
 
 ##### Note about qemu #####
 
-As it is, qemu is configured to wait for a connection (usually from gdb).
+As it is, qemu.sh is configured to optionally wait for a connection (usually from gdb).
 
-To prevent this behavior, you need to change a line in **qemu.sh**.
+To do this pass the flag '-d' like this:
 
-Change this line:
-
-` qemu-system-$(./target-triplet-to-arch.sh $HOST) -s -S -cdrom rinix.iso `
-
-To this:
-
-` qemu-system-$(./target-triplet-to-arch.sh $HOST) -cdrom rinix.iso `
+` ./qemu.sh -d `
 
 ### Contribution guidelines ###
 
