@@ -13,3 +13,13 @@ void arch_init(void) {
 	timer_install();
 	keyboard_install();
 }
+
+void page_arch_init(void)
+{
+	
+}
+
+void arch_finish_init(void)
+{
+	set_pgt_entry(0, 0);
+}

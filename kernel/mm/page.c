@@ -17,6 +17,7 @@ void page_init(uintptr_t address)
 {
 	pd_address = address;
 	pd = (uintptr_t *)pd_address;
+	page_arch_init();
 }
 
 // TODO: Set Page Middle And Page Global Tables

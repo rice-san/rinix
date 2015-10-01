@@ -30,4 +30,5 @@
 // MAXIMUM MEMORY
 #define _RINIX_MAX_VMEM 0x100000000 // 4 GB
 
+
 #endif

@@ -43,7 +43,7 @@ void initk(multiboot_info_t *mbd, uint32_t initialPD)
 		printd("Memory Map Info: \n==================\n");
 		while(mmap < mbd->mmap_addr + mbd->mmap_length) {
 			
-			printd("Memory Map: start=%x length=%x size=%x value=%x\n", (unsigned long)mmap->addr, (unsigned long)mmap->len, (unsigned long)mmap->size, mmap->type);
+		printd("Memory Map: start=%x length=%x size=%x value=%x end=%x\n", (unsigned long)mmap->addr, (unsigned long)mmap->len, (unsigned long)mmap->size, mmap->type, (unsigned long)mmap->addr + mmap->len);
 			mmap = (multiboot_memory_map_t*) ( (unsigned int)mmap + mmap->size + sizeof(unsigned int) );
 		}
 	
@@ -58,6 +58,7 @@ void initk(multiboot_info_t *mbd, uint32_t initialPD)
 		for(;;);
 	}
 	_debug( term_setcolor(make_color(COLOR_LIGHT_GREY, COLOR_BLACK)) );
+	arch_finish_init();
 }
 
 void kmain(void)
