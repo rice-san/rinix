@@ -7,11 +7,8 @@
 #define BUDDY_MAX_ORDER 7
 // buddy.h - Buddy Allocator
 
-typedef struct buddy {
-	struct buddy* next;
-	uint32_t bit;
-} buddy_t;
+typedef uint32_t buddy_t; 
 
-void buddy_build(multiboot_info_t* mbd);
+void buddy_build(uintptr_t);
 
 #endif

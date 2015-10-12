@@ -1,2 +1,6 @@
-// map.c - Map out all memory and place into a safe place.
+#include <mm/mem.h>
+
+// map.c - Create a temporary bit map to decide where to build the physical allocator.
+
+
 

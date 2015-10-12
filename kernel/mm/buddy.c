@@ -20,7 +20,7 @@ static unsigned int bsize(uint32_t size)
 }
 
 
-void buddy_build(multiboot_info_t* mbd)
+void buddy_build(uintptr_t b)
 {
 	
 }

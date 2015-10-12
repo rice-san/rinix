@@ -30,34 +30,12 @@ void initk(multiboot_info_t *mbd, uint32_t initialPD)
 	
 	// Put the Copyright Notice
 	puts("(c) Copyright 2015 Royston Martha. All Rights Reserved.");
-	printf("rinix-%s v%d.%d.%d\n", ARCH_NAME, _RINIX_VERSION_MAJOR, _RINIX_VERSION_MINOR, _RINIX_VERSION_RELEASE);
+	printf("rinix-%s v%d.%d.%d", ARCH_NAME, _RINIX_VERSION_MAJOR, _RINIX_VERSION_MINOR, _RINIX_VERSION_RELEASE);
 	// Check multiboot structure for errors 
-	printd("Multiboot Info: %x\n", &mbd);
-	_debug( term_setcolor(make_color(COLOR_CYAN, COLOR_BLACK)) );
-	printd("Memory Map At: %x\n", mbd->mmap_addr);
-	printd("Memory Map Length: %x\n", mbd->mmap_length);
-	if((mbd->flags & 0x40))
-	{
-		printd("Memory Length: %x\n", mbd->mem_upper);
-		multiboot_memory_map_t* mmap = mbd->mmap_addr;
-		printd("Memory Map Info: \n==================\n");
-		while(mmap < mbd->mmap_addr + mbd->mmap_length) {
-			
-		printd("Memory Map: start=%x length=%x size=%x value=%x end=%x\n", (unsigned long)mmap->addr, (unsigned long)mmap->len, (unsigned long)mmap->size, mmap->type, (unsigned long)mmap->addr + mmap->len);
-			mmap = (multiboot_memory_map_t*) ( (unsigned int)mmap + mmap->size + sizeof(unsigned int) );
-		}
+	printd(" (Debug Mode)");
+	printf("\n");
+	mem_init(mbd);
 	
-	}
-	else if((mbd->flags & 1))
-	{
-		printd("Memory Length: %x\n", mbd->mem_upper);
-	}
-	else
-	{
-		puts("Fatal Error: No valid memory info. Halted.");
-		for(;;);
-	}
-	_debug( term_setcolor(make_color(COLOR_LIGHT_GREY, COLOR_BLACK)) );
 	arch_finish_init();
 }
 
