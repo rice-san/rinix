@@ -5,7 +5,7 @@ rinix
 
 This repository is for a Unix-like operating system in development for the x86 architecture.
 
-We are currently at version **0.0.3** (In Alpha)
+This project is currently at version **0.0.3** (In Alpha)
 
 ### How do I get set up? ###
 
