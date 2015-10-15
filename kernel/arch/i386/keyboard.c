@@ -19,7 +19,6 @@
 
 uint8_t flags = 0;	/* Flags: scroll|nums|caps|lshift|rshift|ctrl|alt */
 
-
 unsigned char kbdus[256] =
 {
     0,  27, '1', '2', '3', '4', '5', '6', '7', '8',	/* 9 */
@@ -166,10 +165,7 @@ void keyboard_handler(struct regs *r)
         /* Here, a key was just pressed. Please note that if you
         *  hold a key down, you will get repeated key press
         *  interrupts. */
-		if (pause_flag == 1)
-		{
-				pause_flag = 0;
-		}
+		unpause();
         /* Just to show you how this works, we simply translate
         *  the keyboard scancode into an ASCII value, and then
         *  display it to the screen. You can get creative and
