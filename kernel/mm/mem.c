@@ -1,3 +1,4 @@
+#include <mm/bitmap.h>
 #include <mm/mem.h>
 
 #include <arch/info.h>
@@ -13,7 +14,7 @@
 #define ROUND_DOWN(x) (((unsigned long)(x) & ~0x0fff) - 0x1000)
 #define ROUND_UP(x) (((unsigned long)(x) & ~0x0fff) + 0x1000)
 
-#define HIGH_BIT 1 << (ADDR_BITS - 1)
+
 
 int bitmap_size = 0; 
 
@@ -58,7 +59,7 @@ void mem_init(multiboot_info_t* mbd)
 				unusable_mem += mmap->len;
 				_debug( term_setcolor( make_color(COLOR_RED, COLOR_BLACK)));
 			}
-			printd("Memory Map: start=%x length=%x size=%x value=%x end=%x\n", (section_start = (unsigned long)mmap->addr), (section_size = (unsigned long)mmap->len), (unsigned long)mmap->size, mmap->type, (section_end = (unsigned long)mmap->addr + mmap->len));
+			printd("Memory Map: start=%x length=%x size=%x value=%x end=%x\n", (section_start = (unsigned long)mmap->addr), (section_size = (unsigned long)mmap->len), (unsigned long)mmap->size, mmap->type, (section_end = (unsigned long)mmap->addr + mmap->len - 1));
 			if( section_size > bitmap_size  && mmap->type == 1)
 			{
 				short int newline = 0;
@@ -73,7 +74,7 @@ void mem_init(multiboot_info_t* mbd)
 						{
 							bitmap_place = ROUND_UP(UNMAP_KERNEL(&kernel_end));
 							printd("\nPut the bitmap here: %x\n", bitmap_place);
-							kernel_bitmap = (uint32_t*) bitmap_place;
+							create_bitmap(bitmap_place, mbd);
 							break;
 						}
 					}
@@ -84,66 +85,6 @@ void mem_init(multiboot_info_t* mbd)
 			mmap = (multiboot_memory_map_t*) ( (unsigned int)mmap + mmap->size + sizeof(unsigned int) );
 			_debug( term_setcolor( make_color(COLOR_LIGHT_GREY, COLOR_BLACK)));
 		}
-		
-		// Populate Memory Map
-		mmap = mbd->mmap_addr;
-		printd("Memory Map Info: \n==================\n");
-		usable_mem = 0;
-		unusable_mem = 0;
-		uint32_t i = 0;
-		while(mmap < mbd->mmap_addr + mbd->mmap_length) {
-			if(mmap->type == 1)
-			{
-				usable_mem += mmap->len;
-				_debug( term_setcolor( make_color(COLOR_GREEN, COLOR_BLACK))); 
-			}
-			else
-			{
-				unusable_mem += mmap->len;
-				_debug( term_setcolor( make_color(COLOR_RED, COLOR_BLACK)));
-			}
-			section_start = (unsigned long)mmap->addr;
-			section_size = (unsigned long)mmap->len;
-			section_end = (unsigned long)mmap->addr + mmap->len;
-			unsigned long bitmap_sec_start = section_start/0x1000;
-			unsigned long bitmap_sec_length = section_size/0x1000;
-			unsigned long bitmap_sec_end = section_end/0x1000;
-			printd("Memory Map: start=%x length=%x size=%x value=%x end=%x\n", section_start, section_size, (unsigned long)mmap->size, mmap->type, section_end);
-			pause();
-			if((section_start % 0x1000) > 0)
-			{
-				printd("Warning: Section not well divided. \n");
-				pause();
-			}
-			i = bitmap_sec_start;
-			while(i <= ((bitmap_sec_end) ))
-			{
-				if(mmap->type == 1)
-				{
-					printd("Bitmap Bit #: %i\n", i);
-					printd("Bitmap Section: %i\n", i / 32);
-					printd("Bitmap Section Bit: %i\n", i % 32);
-					printd("Usable\n");
-					if (kernel_bitmap[i/32] >> (ADDR_BITS - i) & 1) {	
-						kernel_bitmap[i/32] &= ~(HIGH_BIT >> i % 32); //Set to O
-					}
-				}
-				else
-				{
-					printd("Bitmap Bit #: %i\n", i);
-					printd("Bitmap Section: %i\n", i / 32);
-					printd("Bitmap Section Bit: %i\n", i % 32);
-					printd("Unusable\n");
-					kernel_bitmap[i/32] |= (HIGH_BIT >> i % 32); //Set to 1
-				}
-				i++;
-			}
-			mmap = (multiboot_memory_map_t*) ( (unsigned int)mmap + mmap->size + sizeof(unsigned int) );
-			_debug( term_setcolor( make_color(COLOR_LIGHT_GREY, COLOR_BLACK)));
-		}
-		printd("Usable Memory: %l\n", usable_mem);
-		printd("Unusable Memory %l\n", unusable_mem);
-		printd("Re-measured Bitmap Memory: %x\n", ROUND_UP(usable_mem + unusable_mem) / 0x1000);
 	}
 	else if((mbd->flags & 1))
 	{
@@ -158,6 +99,5 @@ void mem_init(multiboot_info_t* mbd)
 }
 
 #undef UNMAP_KERNEL
-#undef BIT
 #undef ROUND_DOWN
 #undef ROUND_UP
