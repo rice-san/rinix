@@ -11,9 +11,33 @@
 
 
 // mm/bitmap.c - Define Kernel Bitmap Interaction
+
+// _find_free_frame() - Find the nearest free frame, and return the number of the bit with a zero
+static uint64_t _find_free_frame()
+{
+	uint32_t pf_chunk = 0;
+	uint64_t index = kernel_bitmap.last_checked / 32;
+	uint8_t found = 0;
+	while (found == 0)
+	{
+		pf_chunk = (kernel_bitmap.ptr[index] ^ 0xFFFFFFFF);
+		int i = 0;
+		while(pf_chunk > 0)
+		{
+			if (pf_chunk & HIGH_BIT)
+			{
+				return (index * 32) + i;
+			}
+			i++;
+		}
+		index++;
+	}
+}
+
+
 int create_bitmap(uintptr_t loc, multiboot_info_t* mbd)
 {
-    kernel_bitmap = loc;
+    kernel_bitmap.ptr = loc;
     // Populate Memory Map
     int success = 0;
     int section_start = 0;
@@ -49,13 +73,13 @@ int create_bitmap(uintptr_t loc, multiboot_info_t* mbd)
 		{
 			if(mmap->type == 1)
 			{
-				if (kernel_bitmap[i/32] >> (ADDR_BITS - i) & 1) {	
-					kernel_bitmap[i/32] &= ~(HIGH_BIT >> i % 32); //Set to O
+				if (kernel_bitmap.ptr[i/32] >> (ADDR_BITS - i) & 1) {	
+					kernel_bitmap.ptr[i/32] &= ~(HIGH_BIT >> i % 32); //Set to O (free)
 				}
 			}
 			else
 			{
-				kernel_bitmap[i/32] |= (HIGH_BIT >> i % 32); //Set to 1
+				kernel_bitmap.ptr[i/32] |= (HIGH_BIT >> i % 32); //Set to 1 (used)
 			}
 			i++;
 		}

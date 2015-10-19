@@ -5,14 +5,14 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <mm/bitmap.h>
+
 #include <rinix/debug.h>
 #include <rinix/multiboot.h>
 #include <rinix/vga.h>
 
 extern kernel_start;
 extern kernel_end;
-
-uint32_t *kernel_bitmap;
 
 uintptr_t pd_address;
 uintptr_t *pd;
