@@ -39,8 +39,8 @@ void mem_init(multiboot_info_t* mbd)
 	{
 		if(mbd->flags & 1)
 		{
-			printd("Memory Length: %lK\n", ((memory_length = (mbd->mem_lower)+(mbd->mem_upper))/1024));
-			bitmap_size = (memory_length / 0x1000);
+			printd("Memory Length: %lK\n", ((memory_length = (mbd->mem_lower)+(mbd->mem_upper))));
+			bitmap_size = (memory_length / 0x4) + 1;
 			printd("Kernel Bitmap Size: %x\n", bitmap_size);
 		}
 		// Find place for bitmap
@@ -74,7 +74,7 @@ void mem_init(multiboot_info_t* mbd)
 						{
 							bitmap_place = ROUND_UP(UNMAP_KERNEL(&kernel_end));
 							printd("\nPut the bitmap here: %x\n", bitmap_place);
-							create_bitmap(bitmap_place, mbd);
+							create_bitmap(bitmap_place, bitmap_size, mbd);
 							break;
 						}
 					}

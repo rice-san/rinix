@@ -9,12 +9,15 @@
 
 #define HIGH_BIT 1 << (ADDR_BITS - 1)
 
-#define _MARK_FRAME_USED(chunk, bit) \
-(kernel_bitmap.ptr[chunk] |= (HIGH_BIT >> bit))
+inline void _mark_frame_used(uint64_t chunk, uint32_t bit)
+{
+	(kernel_bitmap.ptr[chunk] |= (HIGH_BIT >> bit));
+}
 
-#define _MARK_FRAME_FREE(chunk, bit) \
-(kernel_bitmap.ptr[chunk] &= ~(HIGH_BIT >> bit))
-
+inline void _mark_frame_free(uint64_t chunk, uint32_t bit)
+{
+	(kernel_bitmap.ptr[chunk] &= ~(HIGH_BIT >> bit));
+}
 // mm/bitmap.c - Define Kernel Bitmap Interaction
 
 // _free_frame() - Free the specified page frame, specified by bit
@@ -32,7 +35,7 @@ static uint64_t _find_free_frame(void)
 		int i = 0;
 		while(pf_chunk > 0)
 		{
-			if (pf_chunk & (HIGH_BIT >> i))
+			if ((pf_chunk & (HIGH_BIT >> i)) > 0)
 			{
 				return (index * 32) + i;
 			}
@@ -50,13 +53,13 @@ static uint64_t _get_free_frame(void)
 	uint8_t found = 0;
 	while (found == 0)
 	{
-		pf_chunk = (kernel_bitmap.ptr[index] ^ ~(0));
+		pf_chunk = (kernel_bitmap.ptr[index] ^ (~0));
 		int i = 0;
 		while(pf_chunk > 0)
 		{
-			if (pf_chunk & (HIGH_BIT >> i) == 0)
+			if (pf_chunk & (HIGH_BIT >> i) > 0)
 			{
-				_MARK_FRAME_USED(index, i);
+				_mark_frame_used(index, i);
 				found = 1;
 				return (index * 32) + i;
 			}
@@ -68,14 +71,15 @@ static uint64_t _get_free_frame(void)
 
 uintptr_t get_frame(void)
 {
-	
-	return (_find_free_frame() * 0x1000);
+	return (uintptr_t)(_find_free_frame() * 0x1000);
 }
 
 
-int create_bitmap(uintptr_t loc, multiboot_info_t* mbd)
+int create_bitmap(uintptr_t loc, uint64_t size, multiboot_info_t* mbd)
 {
     kernel_bitmap.ptr = loc;
+    kernel_bitmap.length = size;
+    kernel_bitmap.last_checked = 0;
     // Populate Memory Map
     int success = 0;
     int section_start = 0;
@@ -111,8 +115,8 @@ int create_bitmap(uintptr_t loc, multiboot_info_t* mbd)
 		{
 			if(mmap->type == 1)
 			{
-				if (kernel_bitmap.ptr[i/32] >> (ADDR_BITS - i) & 1) {
-					kernel_bitmap.ptr[i/32] &= ~(HIGH_BIT >> i % 32); //Set to O (free)
+				if ((kernel_bitmap.ptr[i/32] >> (ADDR_BITS - i)) & 1) {
+					kernel_bitmap.ptr[i/32] &= (~(HIGH_BIT >> i % 32)); //Set to O (free)
 				}
 			}
 			else
@@ -124,6 +128,10 @@ int create_bitmap(uintptr_t loc, multiboot_info_t* mbd)
 		mmap = (multiboot_memory_map_t*) ( (unsigned int)mmap + mmap->size + sizeof(unsigned int) );
 		_debug( term_setcolor( make_color(COLOR_LIGHT_GREY, COLOR_BLACK)));
 	}
+	// Start marking used pages
+	
+	// Mark memory below 1MB as used, 1MB = 256 * 4K
+	memset(kernel_bitmap.ptr, ~(0), (size_t)((0x100000/0x1000)/8) );
 	return success;
 }
 
