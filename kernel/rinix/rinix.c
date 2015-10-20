@@ -5,6 +5,7 @@
 
 #include <arch/info.h>
 
+#include <mm/bitmap.h>
 #include <mm/buddy.h>
 #include <mm/mem.h>
 
@@ -49,5 +50,8 @@ void kmain(void)
 	set_pgt_entry(0, 0);
 	printd("%x\n", get_pgt_entry(0));
 	printd("%x\n", get_pgt_entry(0xC0000000));
+	printd("%x\n", get_frame());
+	printd("%x\n", get_frame());
+	printd("%x\n", get_frame());
 	for(;;);
 }

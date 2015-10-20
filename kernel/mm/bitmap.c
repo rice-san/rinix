@@ -9,11 +9,19 @@
 
 #define HIGH_BIT 1 << (ADDR_BITS - 1)
 
+#define _MARK_FRAME_USED(chunk, bit) \
+(kernel_bitmap.ptr[chunk] |= (HIGH_BIT >> bit))
+
+#define _MARK_FRAME_FREE(chunk, bit) \
+(kernel_bitmap.ptr[chunk] &= ~(HIGH_BIT >> bit))
 
 // mm/bitmap.c - Define Kernel Bitmap Interaction
 
+// _free_frame() - Free the specified page frame, specified by bit
+
+
 // _find_free_frame() - Find the nearest free frame, and return the number of the bit with a zero
-static uint64_t _find_free_frame()
+static uint64_t _find_free_frame(void)
 {
 	uint32_t pf_chunk = 0;
 	uint64_t index = kernel_bitmap.last_checked / 32;
@@ -24,7 +32,7 @@ static uint64_t _find_free_frame()
 		int i = 0;
 		while(pf_chunk > 0)
 		{
-			if (pf_chunk & HIGH_BIT)
+			if (pf_chunk & (HIGH_BIT >> i))
 			{
 				return (index * 32) + i;
 			}
@@ -32,6 +40,36 @@ static uint64_t _find_free_frame()
 		}
 		index++;
 	}
+}
+
+// _get_free_frame() - Return first free page frame AND mark as used
+static uint64_t _get_free_frame(void)
+{
+	uint32_t pf_chunk = 0;
+	uint64_t index = kernel_bitmap.last_checked / 32;
+	uint8_t found = 0;
+	while (found == 0)
+	{
+		pf_chunk = (kernel_bitmap.ptr[index] ^ ~(0));
+		int i = 0;
+		while(pf_chunk > 0)
+		{
+			if (pf_chunk & (HIGH_BIT >> i) == 0)
+			{
+				_MARK_FRAME_USED(index, i);
+				found = 1;
+				return (index * 32) + i;
+			}
+			i++;
+		}
+		index++;
+	}
+}
+
+uintptr_t get_frame(void)
+{
+	
+	return (_find_free_frame() * 0x1000);
 }
 
 
@@ -73,7 +111,7 @@ int create_bitmap(uintptr_t loc, multiboot_info_t* mbd)
 		{
 			if(mmap->type == 1)
 			{
-				if (kernel_bitmap.ptr[i/32] >> (ADDR_BITS - i) & 1) {	
+				if (kernel_bitmap.ptr[i/32] >> (ADDR_BITS - i) & 1) {
 					kernel_bitmap.ptr[i/32] &= ~(HIGH_BIT >> i % 32); //Set to O (free)
 				}
 			}

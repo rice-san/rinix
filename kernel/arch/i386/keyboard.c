@@ -165,7 +165,7 @@ void keyboard_handler(struct regs *r)
         /* Here, a key was just pressed. Please note that if you
         *  hold a key down, you will get repeated key press
         *  interrupts. */
-		unpause();
+		    unpause();
         /* Just to show you how this works, we simply translate
         *  the keyboard scancode into an ASCII value, and then
         *  display it to the screen. You can get creative and
