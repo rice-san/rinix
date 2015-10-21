@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 #include <arch/info.h>
 #include <arch/page.h>
 
@@ -7,7 +9,11 @@
 #include <rinix/debug.h>
 #include <rinix/multiboot.h>
 
-#define HIGH_BIT 1 << (ADDR_BITS - 1)
+#define HIGH_BIT (1 << (ADDR_BITS - 1))
+#define UNMAP_KERNEL(x) ((unsigned long) (x) - 0xC0000000)
+
+uint64_t _find_free_frame(void);
+uint64_t _get_free_frame(void);
 
 inline void _mark_frame_used(uint64_t chunk, uint32_t bit)
 {
@@ -24,7 +30,7 @@ inline void _mark_frame_free(uint64_t chunk, uint32_t bit)
 
 
 // _find_free_frame() - Find the nearest free frame, and return the number of the bit with a zero
-static uint64_t _find_free_frame(void)
+uint64_t _find_free_frame(void)
 {
 	uint32_t pf_chunk = 0;
 	uint64_t index = kernel_bitmap.last_checked / 32;
@@ -46,7 +52,7 @@ static uint64_t _find_free_frame(void)
 }
 
 // _get_free_frame() - Return first free page frame AND mark as used
-static uint64_t _get_free_frame(void)
+uint64_t _get_free_frame(void)
 {
 	uint32_t pf_chunk = 0;
 	uint64_t index = kernel_bitmap.last_checked / 32;
@@ -57,21 +63,25 @@ static uint64_t _get_free_frame(void)
 		int i = 0;
 		while(pf_chunk > 0)
 		{
-			if (pf_chunk & (HIGH_BIT >> i) > 0)
+			if ((pf_chunk & (HIGH_BIT >> i)) > 0)
 			{
 				_mark_frame_used(index, i);
 				found = 1;
-				return (index * 32) + i;
+				return (uint64_t)(index * 32) + i;
 			}
 			i++;
 		}
 		index++;
 	}
+	if (found == 0)
+	{
+		return 0;
+	}
 }
 
 uintptr_t get_frame(void)
 {
-	return (uintptr_t)(_find_free_frame() * 0x1000);
+	return _get_free_frame() * 0x1000;
 }
 
 
@@ -132,7 +142,8 @@ int create_bitmap(uintptr_t loc, uint64_t size, multiboot_info_t* mbd)
 	
 	// Mark memory below 1MB as used, 1MB = 256 * 4K
 	memset(kernel_bitmap.ptr, ~(0), (size_t)((0x100000/0x1000)/8) );
+	
+	// Mark kernel memory as used
+	memset(kernel_bitmap.ptr[UNMAP_KERNEL(&kernel_start)/0x1000], ~(0), (size_t)((&kernel_end - &kernel_start)/0x1000/32 + 1));
 	return success;
 }
-
-#undef HIGH_BIT

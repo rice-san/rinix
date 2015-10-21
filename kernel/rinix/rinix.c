@@ -48,10 +48,6 @@ void kmain(void)
 	printd("Kernel Begins at %x\n", &kernel_start);
 	printd("Kernel Ends at: %x\n", &kernel_end);
 	set_pgt_entry(0, 0);
-	printd("%x\n", get_pgt_entry(0));
-	printd("%x\n", get_pgt_entry(0xC0000000));
-	printd("%x\n", get_frame());
-	printd("%x\n", get_frame());
-	printd("%x\n", get_frame());
+	printd("First Free Frame is: %x\n", get_frame());
 	for(;;);
 }

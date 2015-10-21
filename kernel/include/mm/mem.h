@@ -11,8 +11,8 @@
 #include <rinix/multiboot.h>
 #include <rinix/vga.h>
 
-extern kernel_start;
-extern kernel_end;
+extern unsigned int kernel_start;
+extern unsigned int kernel_end;
 
 uintptr_t pd_address;
 uintptr_t *pd;
