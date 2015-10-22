@@ -13,6 +13,8 @@
 
 extern unsigned int kernel_start;
 extern unsigned int kernel_end;
+unsigned int kernel_length;
+
 
 uintptr_t pd_address;
 uintptr_t *pd;

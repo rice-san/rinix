@@ -144,6 +144,8 @@ int create_bitmap(uintptr_t loc, uint64_t size, multiboot_info_t* mbd)
 	memset(kernel_bitmap.ptr, ~(0), (size_t)((0x100000/0x1000)/8) );
 	
 	// Mark kernel memory as used
-	memset(kernel_bitmap.ptr[UNMAP_KERNEL(&kernel_start)/0x1000], ~(0), (size_t)((&kernel_end - &kernel_start)/0x1000/32 + 1));
+	printd("%x\n", kernel_bitmap.ptr + UNMAP_KERNEL(&kernel_start)/0x1000/32);
+	printd("%x\n", kernel_bitmap.ptr + UNMAP_KERNEL(&kernel_start)/0x1000/32 +(((((&kernel_end - &kernel_start)/0x1000)/8) + 1)));
+	memset(kernel_bitmap.ptr + ((UNMAP_KERNEL(&kernel_start)/0x1000)/32), ~(0), (size_t)(((kernel_length/0x1000)/8) + 1));
 	return success;
 }
