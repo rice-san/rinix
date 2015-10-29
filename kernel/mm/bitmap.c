@@ -15,12 +15,12 @@
 uint64_t _find_free_frame(void);
 uint64_t _get_free_frame(void);
 
-inline void _mark_frame_used(uint64_t chunk, uint32_t bit)
+inline void _mark_frame_used(uint64_t chunk, uint8_t bit)
 {
 	(kernel_bitmap.ptr[chunk] |= (HIGH_BIT >> bit));
 }
 
-inline void _mark_frame_free(uint64_t chunk, uint32_t bit)
+inline void _mark_frame_free(uint64_t chunk, uint8_t bit)
 {
 	(kernel_bitmap.ptr[chunk] &= ~(HIGH_BIT >> bit));
 }
@@ -32,8 +32,8 @@ inline void _mark_frame_free(uint64_t chunk, uint32_t bit)
 // _find_free_frame() - Find the nearest free frame, and return the number of the bit with a zero
 uint64_t _find_free_frame(void)
 {
-	uint32_t pf_chunk = 0;
-	uint64_t index = kernel_bitmap.last_checked / 32;
+	uint8_t pf_chunk = 0;
+	uint64_t index = kernel_bitmap.last_checked / 8;
 	uint8_t found = 0;
 	while (found == 0)
 	{
@@ -43,7 +43,7 @@ uint64_t _find_free_frame(void)
 		{
 			if ((pf_chunk & (HIGH_BIT >> i)) > 0)
 			{
-				return (index * 32) + i;
+				return (index * 8) + i;
 			}
 			i++;
 		}
@@ -54,8 +54,8 @@ uint64_t _find_free_frame(void)
 // _get_free_frame() - Return first free page frame AND mark as used
 uint64_t _get_free_frame(void)
 {
-	uint32_t pf_chunk = 0;
-	uint64_t index = kernel_bitmap.last_checked / 32;
+	uint8_t pf_chunk = 0;
+	uint64_t index = kernel_bitmap.last_checked / 8;
 	uint8_t found = 0;
 	while (found == 0)
 	{
@@ -67,7 +67,7 @@ uint64_t _get_free_frame(void)
 			{
 				_mark_frame_used(index, i);
 				found = 1;
-				return (uint64_t)(index * 32) + i;
+				return (uint64_t)(index * 8) + i;
 			}
 			i++;
 		}
@@ -125,13 +125,13 @@ int create_bitmap(uintptr_t loc, uint64_t size, multiboot_info_t* mbd)
 		{
 			if(mmap->type == 1)
 			{
-				if ((kernel_bitmap.ptr[i/32] >> (ADDR_BITS - i)) & 1) {
-					kernel_bitmap.ptr[i/32] &= (~(HIGH_BIT >> i % 32)); //Set to O (free)
+				if ((kernel_bitmap.ptr[i/8] >> (ADDR_BITS - i)) & 1) {
+					kernel_bitmap.ptr[i/8] &= (~(HIGH_BIT >> i % 8)); //Set to O (free)
 				}
 			}
 			else
 			{
-				kernel_bitmap.ptr[i/32] |= (HIGH_BIT >> i % 32); //Set to 1 (used)
+				kernel_bitmap.ptr[i/8] |= (HIGH_BIT >> i % 8); //Set to 1 (used)
 			}
 			i++;
 		}
@@ -144,8 +144,8 @@ int create_bitmap(uintptr_t loc, uint64_t size, multiboot_info_t* mbd)
 	memset(kernel_bitmap.ptr, ~(0), (size_t)((0x100000/0x1000)/8) );
 	
 	// Mark kernel memory as used
-	printd("%x\n", kernel_bitmap.ptr + UNMAP_KERNEL(&kernel_start)/0x1000/32);
-	printd("%x\n", kernel_bitmap.ptr + UNMAP_KERNEL(&kernel_start)/0x1000/32 +(((((&kernel_end - &kernel_start)/0x1000)/8) + 1)));
-	memset(kernel_bitmap.ptr + ((UNMAP_KERNEL(&kernel_start)/0x1000)/32), ~(0), (size_t)(((kernel_length/0x1000)/8) + 1));
+	printd("%x\n", kernel_bitmap.ptr + UNMAP_KERNEL(&kernel_start)/0x1000/8);
+	printd("%x\n", kernel_bitmap.ptr + UNMAP_KERNEL(&kernel_start)/0x1000/8 +(((((&kernel_end - &kernel_start)/0x1000)/8) + 1)));
+	memset(kernel_bitmap.ptr + ((UNMAP_KERNEL(&kernel_start)/0x1000)/8), ~(0), (size_t)(((kernel_length/0x1000)/8) + 1));
 	return success;
 }
