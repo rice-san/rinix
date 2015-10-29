@@ -9,7 +9,7 @@
 #include <rinix/debug.h>
 #include <rinix/multiboot.h>
 
-#define HIGH_BIT (1 << (ADDR_BITS - 1))
+#define HIGH_BIT (1 << (8 - 1))
 #define UNMAP_KERNEL(x) ((unsigned long) (x) - 0xC0000000)
 
 uint64_t _find_free_frame(void);
@@ -27,6 +27,27 @@ inline void _mark_frame_free(uint64_t chunk, uint8_t bit)
 // mm/bitmap.c - Define Kernel Bitmap Interaction
 
 // _free_frame() - Free the specified page frame, specified by bit
+int _free_frame(uint64_t frame_num)
+{
+	uint64_t index = frame_num / 8;
+	kernel_bitmap.last_checked = index;
+	int i = frame_num % 8;
+	if ((kernel_bitmap.ptr[index] & (HIGH_BIT >> i)) > 0)
+	{
+		_mark_frame_free(index, i);
+		return 0;
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+// free_frame() - Actually free the frame, by physical address
+int free_frame(uintptr_t pf_addr)
+{
+	return _free_frame(pf_addr / 0x1000);
+}
 
 
 // _find_free_frame() - Find the nearest free frame, and return the number of the bit with a zero
