@@ -5,7 +5,7 @@
 
 // Page Table Structure
 // The sizes have to be put in manually for now.
-// (Automatic would be too complicated right now)
+// (Automatic would be too complicated for me right now)
 
 // PGDT - Page Table Directory
 // PGMT - Page Table Middle
@@ -23,9 +23,9 @@
 #define _PGOFFSET_BITS 12	// Size in bits
 #define _PGOFFSET_MASK 0x00000FFF
 
-#define _PGDT_SIZE 1024
-#define	_PGMT_SIZE 0
-#define _PGLT_SIZE 1024
+#define _PGDT_SIZE 1024 // Number of Entries
+#define	_PGMT_SIZE 0    // Number of Entries
+#define _PGLT_SIZE 1024 // Number of Entries
 
 // MAXIMUM MEMORY
 #define _RINIX_MAX_VMEM 0x100000000 // 4 GB

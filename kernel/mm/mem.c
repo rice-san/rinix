@@ -21,7 +21,7 @@ int bitmap_size = 0;
 
 void mem_init(multiboot_info_t* mbd)
 {
-	kernel_length = &kernel_end - &kernel_start;
+	kernel_length = (&kernel_end - &kernel_start);
 	
 	unsigned long section_start = 0;
 	unsigned long section_end = 0;

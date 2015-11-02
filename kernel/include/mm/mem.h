@@ -34,4 +34,6 @@ void set_pgt_entry(uintptr_t, uintptr_t);
 void set_pmt_entry(uintptr_t, uintptr_t);
 void set_pt_entry(uintptr_t, uintptr_t);
 
+void set_pd(uintptr_t);
+
 #endif
