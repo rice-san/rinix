@@ -10,7 +10,7 @@
 #include <rinix/multiboot.h>
 
 #define HIGH_BIT (1 << (8 - 1))
-#define UNMAP_KERNEL(x) ((unsigned long) (x) - 0xC0000000)
+#define UNMAP_KERNEL(x) (((unsigned long) (x)) - 0xC0000000)
 
 uint64_t _find_free_frame(void);
 uint64_t _get_free_frame(void);
@@ -164,11 +164,20 @@ int create_bitmap(uintptr_t loc, uint64_t size, multiboot_info_t* mbd)
 	// Start marking used pages
 	
 	// Mark memory below 1MB as used, 1MB = 256 * 4K
+	// Since the first 1MB is a very even size, we can cheat and use memset
 	memset(kernel_bitmap.ptr, ~(0), (size_t)((0x100000/0x1000)/8) );
 	
 	// Mark kernel memory as used
-	printd("%x\n", kernel_bitmap.ptr + (UNMAP_KERNEL(&kernel_start)/0x1000)/8);
-	printd("%x\n", kernel_bitmap.ptr + (UNMAP_KERNEL(&kernel_start)/0x1000)/8 +(((((&kernel_end - &kernel_start)/0x1000)/8) + 1)));
-	memset(&(kernel_bitmap.ptr[((UNMAP_KERNEL(&kernel_start)/0x1000)/8)]), ~(0), (size_t)(((kernel_length/0x1000)/8) + 1));
+	for(unsigned int i = UNMAP_KERNEL(&kernel_start); i <= UNMAP_KERNEL(&kernel_end); i +=0x1000)
+	{
+		_mark_frame_used((i/0x1000)/8, (i/0x1000)%8);
+	}
+	
+	// Mark this bitmap as used
+	for(unsigned int i = kernel_bitmap.ptr; i <= (kernel_bitmap.ptr + kernel_bitmap.length); i +=0x1000)
+	{
+		_mark_frame_used((i/0x1000)/8, (i/0x1000)%8);
+	}
+	
 	return success;
 }

@@ -13,7 +13,7 @@
 #define NUMLOCK(flag) (flag & 0x20) // 00|10|00|00
 #define SCROLLLOCK(flag) (flag & 0x10) // 00|01|00|00
 
-
+extern int pause_flag;
 
 /* TODO: Add Flag Bits for CAPS LOCK, NUMS LOCK, and SCROLL LOCK */
 
@@ -117,19 +117,19 @@ void keyboard_handler(struct regs *r)
         *  shift, alt, or control keys... */
       if((scancode & 0x7F) == 0x2A) /* Left Shift */
       {
-			  flags &= 0x07; /* 01|11 */
+			  flags &= 0xF7; /* 01|11 */
 		  }
 		  else if((scancode & 0x7F) == 0x36) /* Right Shift */
 		  {
-			  flags &= 0x0A; /* 10|11 */
+			  flags &= 0xFA; /* 10|11 */
 		  }
 		  else if((scancode & 0x7F) == 0x1D) /* Control */
 		  {
-			  flags &= 0x0D; /* 11|01 */
+			  flags &= 0xFD; /* 11|01 */
 		  }
 		  else if((scancode & 0x7F) == 0x38) /* Alt */
 		  {
-			  flags &= 0x0E; /* 11|10 */
+			  flags &= 0xFE; /* 11|10 */
 		  }
     }
     else
@@ -165,7 +165,7 @@ void keyboard_handler(struct regs *r)
         /* Here, a key was just pressed. Please note that if you
         *  hold a key down, you will get repeated key press
         *  interrupts. */
-		    unpause();
+        
         /* Just to show you how this works, we simply translate
         *  the keyboard scancode into an ASCII value, and then
         *  display it to the screen. You can get creative and
@@ -174,10 +174,24 @@ void keyboard_handler(struct regs *r)
         *  to the above layout to correspond to 'shift' being
         *  held. If shift is held using the larger lookup table,
         *  you would add 128 to the scancode when you look for it */
-        if((SHIFT(flags) && !CAPSLOCK(flags)) || (CAPSLOCK(flags) && !SHIFT(flags)))
-			    printf("%c", kbdus_shift[scancode]);
+        
+        // Since we don't want the key press to go to screen,
+        // we don't let it print a charachter when paused
+        if (pause_flag == 1)
+        {
+          unpause();
+        }
         else
-			    printf("%c", kbdus[scancode]);
+        {
+          if((SHIFT(flags) && !CAPSLOCK(flags)) || (CAPSLOCK(flags) && !SHIFT(flags)))
+          {
+			      printf("%c", kbdus_shift[scancode]);
+          }
+          else
+          {
+		        printf("%c", kbdus[scancode]);
+          }
+        }
     }
 }
 

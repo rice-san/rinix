@@ -19,7 +19,7 @@
 int bitmap_size = 0; 
 
 
-void mem_init(multiboot_info_t* mbd)
+void kernel_bitmap_init(multiboot_info_t* mbd)
 {
 	kernel_length = (&kernel_end - &kernel_start);
 	
@@ -96,6 +96,11 @@ void mem_init(multiboot_info_t* mbd)
 		for(;;);
 	}
 	_debug( term_setcolor(make_color(COLOR_LIGHT_GREY, COLOR_BLACK)) );
+}
+
+void mem_init(multiboot_info_t* mbd)
+{
+	kernel_bitmap_init(mbd);
 }
 
 #undef UNMAP_KERNEL
