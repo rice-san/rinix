@@ -18,8 +18,7 @@ void page_init(uintptr_t address)
 	pd_address = address;
 	pd = (uintptr_t *)pd_address;
 	page_arch_init();
-	set_pgt_entry(0, 0);
-	set_pgt_entry(0xFFC00000, ( ((unsigned int)pd & 0xFFFFF000) | 0x83 ));
+	set_pgt_entry(0xFFC00000, ( ((unsigned int)*pd) | 0x83 ));
 }
 
 // TODO: Set Page Middle And Page Global Tables
