@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <arch/page.h>
+
 #include <mm/bitmap.h>
 
 #include <rinix/debug.h>
@@ -18,6 +20,7 @@ unsigned int kernel_length;
 
 uintptr_t pd_address;
 uintptr_t *pd;
+uaddr_t *pg;
 size_t memory_length;
 
 void mem_init(multiboot_info_t*);	// Go from nothing to bitmap to buddy allocator

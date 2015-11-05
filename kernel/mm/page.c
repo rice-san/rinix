@@ -16,61 +16,59 @@ static inline void _flush_tlb(unsigned long addr)
 void page_init(uintptr_t address)
 {
 	pd_address = address;
-	pd = (uintptr_t *)pd_address;
+	pd = (uaddr_t *)pd_address;
 	page_arch_init();
-	set_pgt_entry(0xFFC00000, ( ((unsigned int)*pd) | 0x83 ));
+	set_pgt_entry(0xFFC00000, ( ((unsigned int)*pd) | 0x03 ));
+	pg = (uaddr_t *)0xFFFFF000;
 }
 
 // TODO: Set Page Middle And Page Global Tables
 
 uintptr_t get_pgt_entry(uintptr_t virt)
 {
-	uintptr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGDT_BITS));
+	uaddr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGDT_BITS));
 	
-	pd = (uintptr_t *)pd_address;
+	pg = (uaddr_t *)pd_address;
 	
-	return pd[pg_select];
+	return pg[pg_select];
 }
 
 uintptr_t get_pmt_entry(uintptr_t virt)
 {
-	uintptr_t* pm;
+	uaddr_t* pm;
 	
-	uintptr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGDT_BITS));
-	uintptr_t pm_select = ((virt & _PGMT_MASK) >> (ADDR_BITS - _PGDT_BITS - _PGMT_BITS));
+	uaddr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGDT_BITS));
+	uaddr_t pm_select = ((virt & _PGMT_MASK) >> (ADDR_BITS - _PGDT_BITS - _PGMT_BITS));
 	
-	pd = (uintptr_t *)pd_address;
+	pd = (uaddr_t *)pd_address;
 	
-	if (pm_select != 0)
-	{
-		pm = (uintptr_t *)pd[pg_select];
+	#if (_PGMT_BITS != 0)
+		pm = (uaddr_t *)pd[pg_select];
 		return pm[pm_select];
-	}
+	#else
+		return 0;
+	#endif
 	
 }
 
 uintptr_t get_pt_entry(uintptr_t virt)
 {
-	uintptr_t* pm;
-	uintptr_t* pt;
-	
+	uaddr_t* pm;
+	uaddr_t* pt;
 	virt = (virt & (~_PGOFFSET_BITS));
 	
-	uintptr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGDT_BITS));
-	uintptr_t pm_select = ((virt & _PGMT_MASK) >> (ADDR_BITS - _PGDT_BITS - _PGMT_BITS));
-	uintptr_t pt_select = ((virt & _PGLT_MASK) >> (ADDR_BITS - _PGDT_BITS - _PGMT_BITS - _PGLT_BITS));
+	uaddr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGDT_BITS));
+	uaddr_t pm_select = ((virt & _PGMT_MASK) >> (ADDR_BITS - _PGDT_BITS - _PGMT_BITS));
+	uaddr_t pt_select = ((virt & _PGLT_MASK) >> (ADDR_BITS - _PGDT_BITS - _PGMT_BITS - _PGLT_BITS));
 	
-	pd = (uintptr_t *)pd_address;
+	pd = (uaddr_t *)pd_address;
 	
-	if (pm_select != 0)
-	{
-		pm = (uintptr_t *)pd[pg_select];
-		pt = (uintptr_t *)pm[pm_select];
-	}
-	else
-	{
-		pt = (uintptr_t *)pd[pg_select];
-	}
+	#if (_PGMT_BITS != 0)
+		pm = (uaddr_t *)pd[pg_select];
+		pt = (uaddr_t *)pm[pm_select];
+	#else
+		pt = (uaddr_t *)pd[pg_select];
+	#endif
 	
 	return pt[pt_select];
 }
@@ -79,53 +77,50 @@ uintptr_t get_pt_entry(uintptr_t virt)
 
 void set_pgt_entry(uintptr_t virt, uintptr_t value)
 {
-	uintptr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGDT_BITS));
+	uaddr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGDT_BITS));
 	
-	pd = (uintptr_t *)pd_address;
+	pd = (uaddr_t *)pd_address;
 	
 	pd[pg_select] = value;
+	_flush_tlb(virt);
 }
 
 void set_pmt_entry(uintptr_t virt, uintptr_t value)
 {
-	uintptr_t* pm;
+	uaddr_t* pm;
 	
-	uintptr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGDT_BITS));
-	uintptr_t pm_select = ((virt & _PGMT_MASK) >> (ADDR_BITS - _PGDT_BITS - _PGMT_BITS));
+	uaddr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGDT_BITS));
+	uaddr_t pm_select = ((virt & _PGMT_MASK) >> (ADDR_BITS - _PGDT_BITS - _PGMT_BITS));
 	
-	pd = (uintptr_t *)pd_address;
 	
-	if (pm_select != 0)
-	{
-		pm = (uintptr_t *)pd[pg_select];
+	pd = (uaddr_t *)pd_address;
+	
+	#if (_PGMT_BITS != 0)
+		pm = (uaddr_t *)pd[pg_select];
 		pm[pm_select] = value;
-	}
-	
+	#endif
+	_flush_tlb(virt);
 }
 
 void set_pt_entry(uintptr_t virt, uintptr_t value)
 {
-	uintptr_t* pm;
-	uintptr_t* pt;
+	uaddr_t* pm;
+	uaddr_t* pt;
 	
 	virt = (virt & (~_PGOFFSET_BITS));
 	
-	uintptr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGDT_BITS));
-	uintptr_t pm_select = ((virt & _PGMT_MASK) >> (ADDR_BITS - _PGDT_BITS - _PGMT_BITS));
-	uintptr_t pt_select = ((virt & _PGLT_MASK) >> (ADDR_BITS - _PGDT_BITS - _PGMT_BITS - _PGLT_BITS));
+	uaddr_t pg_select = ((virt & _PGDT_MASK) >> (ADDR_BITS - _PGDT_BITS));
+	uaddr_t pm_select = ((virt & _PGMT_MASK) >> (ADDR_BITS - _PGDT_BITS - _PGMT_BITS));
+	uaddr_t pt_select = ((virt & _PGLT_MASK) >> (ADDR_BITS - _PGDT_BITS - _PGMT_BITS - _PGLT_BITS));
 	
-	pd = (uintptr_t *)pd_address;
+	pd = (uaddr_t *)pd_address;
 	
-	if (pm_select != 0)
-	{
-		pm = (uintptr_t *)pd[pg_select];
-		pt = (uintptr_t *)pm[pm_select];
-	}
-	else
-	{
-		pt = (uintptr_t *)pd[pg_select];
-	}
-	
+	#if (_PGMT_BITS != 0)
+		pm = (uaddr_t *)pd[pg_select];
+		pt = (uaddr_t *)pm[pm_select];
+	#else
+		pt = (uaddr_t *)pd[pg_select];
+	#endif
 	pt[pt_select] = value;
 	_flush_tlb(virt);
 }

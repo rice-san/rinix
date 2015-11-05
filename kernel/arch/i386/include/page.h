@@ -1,6 +1,8 @@
 #ifndef _ARCH_PAGE_H
 #define _ARCH_PAGE_H
 
+#include <stdint.h>
+
 // This file has been modified for: x86 Architechture
 
 // Page Table Structure
@@ -11,6 +13,8 @@
 // PGMT - Page Table Middle
 // PGLT - Page Table Low
 // PGOFFSET - Address Offset
+
+typedef uint32_t uaddr_t; // Set address size for architecture.
 
 #define ADDR_BITS 32
 

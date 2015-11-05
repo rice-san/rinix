@@ -79,8 +79,14 @@ void kernel_bitmap_init(multiboot_info_t* mbd)
 						}
 					}
 				}
-				(newline > 0) ? printd("\n") : printd("");
-				
+				if(newline > 0)
+				{
+					printd("\n");
+				}
+				else
+				{
+					printd("");
+				}
 			}
 			mmap = (multiboot_memory_map_t*) ( (unsigned int)mmap + mmap->size + sizeof(unsigned int) );
 			_debug( term_setcolor( make_color(COLOR_LIGHT_GREY, COLOR_BLACK)));
