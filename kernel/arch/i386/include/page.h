@@ -15,6 +15,7 @@
 // PGOFFSET - Address Offset
 
 typedef uint32_t uaddr_t; // Set address size for architecture.
+typedef uint32_t pte_t; // Set size of an page table entry
 
 #define ADDR_BITS 32
 
@@ -34,5 +35,12 @@ typedef uint32_t uaddr_t; // Set address size for architecture.
 // MAXIMUM MEMORY
 #define _RINIX_MAX_VMEM 0x100000000 // 4 GB
 
+// Define Paging Flags - OR them together
+
+#define PAGE_PRESENT    0x00000001
+#define PAGE_READONLY   0x00000000
+#define PAGE_READWRITE  0x00000002
+#define PAGE_SUPERVISOR 0x00000000
+#define PAGE_USER       0x00000004
 
 #endif

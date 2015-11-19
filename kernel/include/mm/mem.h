@@ -29,13 +29,9 @@ void page_init(uintptr_t);	// Initialize paging
 uintptr_t page_phys(uintptr_t);
 uintptr_t page_virt(uintptr_t);
 
-uintptr_t get_pgt_entry(uintptr_t);
-uintptr_t get_pmt_entry(uintptr_t);
-uintptr_t get_pt_entry(uintptr_t);
-
-void set_pgt_entry(uintptr_t, uintptr_t);
-void set_pmt_entry(uintptr_t, uintptr_t);
-void set_pt_entry(uintptr_t, uintptr_t);
+uintptr_t create_page_dir(uintptr_t*);
+uintptr_t create_page_table(uintptr_t*);
+void map_page(uintptr_t, uintptr_t, uint32_t);
 
 void set_pd(uintptr_t);
 
