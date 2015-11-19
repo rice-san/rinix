@@ -69,17 +69,18 @@ init_paging:
 	movl $_initialPD, %eax
     subl $KERNEL_VIRTUAL_BASE, %eax
 
+    call _populatePT
 
     #Insert Identity Mapped Low memory 4MB Page Table
     movl $_initialTempPT, %ebx
-    sub $KERNEL_VIRTUAL_BASE, %ebx
+    subl $KERNEL_VIRTUAL_BASE, %ebx
     and $0xFFFFF000, %ebx
     or $0x3, %ebx
     movl %ebx, (%eax)
     
     #Insert High Memory Page
     movl $_initialHigherPT, %ebx
-    sub $KERNEL_VIRTUAL_BASE, %ebx
+    subl $KERNEL_VIRTUAL_BASE, %ebx
     and $0xFFFFF000, %ebx
     or $0x3, %ebx
     movl $KERNEL_PT_NUMBER, %edx
