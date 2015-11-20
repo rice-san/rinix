@@ -31,13 +31,10 @@ _initialPD:
     #Blank Page Directory
     .space 0x1000, 0x00
     
-_initialHigherPT:
-    #Higher Page Table
+_initialPT:
+    #A Single Page Table can be used by both lower and upper parts of page directory
     .space 0x1000, 0x00
-    
-_initialTempPT:
-    #The Lower Page Table that will be disposed of
-    .space 0x1000, 0x00
+
 
 # Enable Paging Time!
 .section .text
@@ -71,20 +68,18 @@ init_paging:
 
     call _populatePT
 
-    #Insert Identity Mapped Low memory 4MB Page Table
-    movl $_initialTempPT, %ebx
-    subl $KERNEL_VIRTUAL_BASE, %ebx
-    and $0xFFFFF000, %ebx
-    or $0x3, %ebx
-    movl %ebx, (%eax)
+    #Create a PDE
+    movl $_initialPT, %ecx
+    subl $KERNEL_VIRTUAL_BASE, %ecx
+    and $0xFFFFF000, %ecx
+    or $0x3, %ecx
+    
+    #Insert Identity Mapped Memory
+    movl %ecx, (%eax)
     
     #Insert High Memory Page
-    movl $_initialHigherPT, %ebx
-    subl $KERNEL_VIRTUAL_BASE, %ebx
-    and $0xFFFFF000, %ebx
-    or $0x3, %ebx
     movl $KERNEL_PT_NUMBER, %edx
-    movl %ebx, (%eax, %edx, 4)
+    movl %ecx, (%eax, %edx, 4)
     
     
     #Load PD
@@ -110,28 +105,23 @@ _populatePT:
     push %ecx
     push %edx
     
+    movl $_initialPT, %ecx
+    subl $KERNEL_VIRTUAL_BASE, %ecx
+    
     #The loop incrementor
-    mov $0, %eax
+    movl $0, %eax
 _ptLoop:
     
     #Create the PTE in edx
-    mov %eax, %edx
+    movl %eax, %edx
     shl $12, %edx
     or $3, %edx
     
-    mov $_initialTempPT, %ecx
-    sub $KERNEL_VIRTUAL_BASE, %ecx
-    mov %edx, (%ecx, %eax, 4)
-    
-    mov $_initialHigherPT, %ecx
-    sub $KERNEL_VIRTUAL_BASE, %ecx
-    mov %edx, (%ecx, %eax, 4)
+    movl %edx, (%ecx, %eax, 4)
     
     inc %eax
     cmp $1024, %eax
-    jge _ptLoop
-    
-    
+    jl _ptLoop
     
     #Restore register values
     pop %edx

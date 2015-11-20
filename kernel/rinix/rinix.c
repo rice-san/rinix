@@ -32,14 +32,15 @@ void initk(multiboot_info_t *mbd, uint32_t initialPD)
 {
 	initialPageDirectory = initialPD;
 	term_init();
-	arch_init();	// Perform architecture dependent initialization./
-	page_init(initialPageDirectory);
-	
-	// Put the Copyright Notice
 	puts("(c) Copyright 2015 Royston Martha. All Rights Reserved.");
 	printf("rinix-%s v%d.%d.%d", ARCH_NAME, _RINIX_VERSION_MAJOR, _RINIX_VERSION_MINOR, _RINIX_VERSION_RELEASE);
 	printd(" (Debug Mode)");
 	printf("\n");
+	arch_init();	// Perform architecture dependent initialization./
+	page_init(initialPageDirectory);
+	
+	// Put the Copyright Notice
+	
 	
 	// Initialize the Memory Allocators with the Multiboot Information
 	mem_init(mbd);

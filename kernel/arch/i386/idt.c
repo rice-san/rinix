@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <rinix/debug.h>
+
 #include "regs.h"
 #include "irq.h"
 
@@ -172,13 +174,20 @@ void idt_init(void)
 		
 		// Clear out the IDT
 		memset(&idt, 0, (sizeof(idt)));
-
+		
+		// Disable Interrupts
+		__asm__ __volatile__ ("cli");
+		
 		// Load ISRs and IRQs here
 		intel_isr_install();
+		printd("ISRs Installed");
 		irq_install();
+		printd("IRQs Installed");
 		
 		// Enable Interrupts
-		__asm__ __volatile__ ("sti");
+		//__asm__ __volatile__ ("sti");
+		//printd("Interrupts Enabled");
+		
 		
 		// Load IDT
 		idt_load();
