@@ -1,9 +1,14 @@
 TODO List:
 
 * Finish Standard Libraries
-* Build IRQs
 * Completely handle interupts (rather than simply halting)
 
+v0.0.4b - Re-Did Paging
+* Switched to 4K pages from the single 4M Page
+* Fixed IDT Code
+
+v0.0.4 - Bitmap Page Frame Allocators
++ Added Bitmap Allocator
 
 v0.0.3 - Basic Paging
 + Higher Half Kernel
