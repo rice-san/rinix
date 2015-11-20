@@ -180,17 +180,16 @@ void idt_init(void)
 		
 		// Load ISRs and IRQs here
 		intel_isr_install();
-		printd("ISRs Installed");
+		printd("ISRs Installed\n");
 		irq_install();
-		printd("IRQs Installed");
-		
-		// Enable Interrupts
-		//__asm__ __volatile__ ("sti");
-		//printd("Interrupts Enabled");
-		
+		printd("IRQs Installed\n");
 		
 		// Load IDT
 		idt_load();
+
+		// Enable Interrupts
+		__asm__ __volatile__ ("sti");
+		printd("Interrupts Enabled\n");
 }
 
 /* ISR Related Things*/
