@@ -1,4 +1,5 @@
 #include <mm/bitmap.h>
+#include <mm/kmem.h>
 #include <mm/mem.h>
 
 #include <arch/info.h>
@@ -107,6 +108,7 @@ void kernel_bitmap_init(multiboot_info_t* mbd)
 void mem_init(multiboot_info_t* mbd)
 {
 	kernel_bitmap_init(mbd);
+	kmem_init();
 }
 
 #undef UNMAP_KERNEL

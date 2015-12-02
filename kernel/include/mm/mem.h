@@ -32,6 +32,8 @@ uintptr_t page_virt(uintptr_t);
 uintptr_t create_page_dir(uintptr_t*);
 uintptr_t create_page_table(uintptr_t*);
 void map_page(uintptr_t, uintptr_t, uint32_t);
+void alloc_page(uintptr_t, uint32_t);
+void alloc_map_page(uintptr_t, uint32_t);
 
 void set_pd(uintptr_t);
 

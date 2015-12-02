@@ -19,9 +19,11 @@ LIBS:=$(LIBS) -nostdlib -lk -lgcc
  
 ARCHDIR:=arch/$(HOSTARCH)
 MEMDIR:=mm
+FSDIR:=fs
  
 include $(ARCHDIR)/make.config
 include $(MEMDIR)/make.config
+include $(FSDIR)/make.config
  
 CFLAGS:=$(CFLAGS) $(KERNEL_ARCH_CFLAGS)
 CPFLAGS:=$(CPPFLAGS) $(KERNEL_ARCH_CPPFLAGS)

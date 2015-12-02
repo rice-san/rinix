@@ -1,5 +1,7 @@
 // arch_init.c - Perform machine dependent initialization functions
 // This file is for x86 architectures
+#include <stdint.h>
+#include <rinix/debug.h>
 
 
 extern void gdt_init(void);	// Found in gdt.c
@@ -15,5 +17,5 @@ void arch_init(void) {
 }
 
 void arch_finish_init(void){
-	
+
 }

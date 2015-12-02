@@ -81,6 +81,14 @@ init_paging:
     movl $KERNEL_PT_NUMBER, %edx
     movl %ecx, (%eax, %edx, 4)
     
+    #Create Recursive PDE
+    movl %eax, %ecx
+    and $0xFFFFFF000, %ecx
+    or $0x3, %ecx
+    
+    #Insert Recursive Mapping Page
+    movl $0x3FF, %edx
+    movl %ecx, (%eax, %edx, 4)
     
     #Load PD
     movl %eax, %cr3

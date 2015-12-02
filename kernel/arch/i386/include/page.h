@@ -37,10 +37,10 @@ typedef uint32_t pte_t; // Set size of an page table entry
 
 // Define Paging Flags - OR them together
 
-#define PAGE_PRESENT    0x00000001
-#define PAGE_READONLY   0x00000000
-#define PAGE_READWRITE  0x00000002
-#define PAGE_SUPERVISOR 0x00000000
-#define PAGE_USER       0x00000004
+#define PAGE_P      0x00000001
+#define PAGE_RO     0x00000000
+#define PAGE_RW     0x00000002
+#define PAGE_S      0x00000000
+#define PAGE_U      0x00000004
 
 #endif
