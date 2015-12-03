@@ -83,7 +83,7 @@ init_paging:
     
     #Create Recursive PDE
     movl %eax, %ecx
-    and $0xFFFFFF000, %ecx
+    and $0xFFFFF000, %ecx
     or $0x3, %ecx
     
     #Insert Recursive Mapping Page

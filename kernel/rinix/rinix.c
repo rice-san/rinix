@@ -7,6 +7,7 @@
 
 #include <mm/bitmap.h>
 #include <mm/buddy.h>
+#include <mm/kmem.h>
 #include <mm/mem.h>
 
 #include <rinix/arch_init.h>
@@ -49,7 +50,6 @@ void initk(multiboot_info_t *mbd, uint32_t initialPD)
 
 void kmain(void)
 {
-	printd("Did I make it?\n");
 	// printf("Architecture: %s\n", ARCH_NAME);
 	printd("Page Directory is at address: %x\n", initialPageDirectory);
 	printd("Kernel Begins at %x\n", &kernel_start);

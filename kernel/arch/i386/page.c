@@ -91,7 +91,7 @@ void set_page_table(uintptr_t virt_addr, uintptr_t phys_addr, uint32_t flags)
 {
 	virt_addr &= ~(0xFFF); // Page-align addresses
 	phys_addr &= ~(0xFFF); // Page-align addresses
-	uaddr_t* pde = 0xFFFFF000 | ((virt_addr >> 22) * 4); // Get page directory entry
+	uaddr_t* pde = (0xFFFFF000 | ((virt_addr >> 22) * 4)); // Get page directory entry
 	*pde = phys_addr | flags;
 	_flush_tlb(virt_addr);
 }
@@ -100,7 +100,6 @@ void alloc_page_table(uintptr_t virt_addr, uint32_t flags)
 {
 	uintptr_t phys_addr = get_frame(); // Grab a page frame
 	set_page_table(virt_addr, phys_addr, flags); // Set the page frame accordingly
-	memset( (0xFFC00000 | (((virt_addr >> 12) & 0x3FF000) * 4)), 0, 0x1000);
 }
 
 void dealloc_page_table(uintptr_t virt_addr)

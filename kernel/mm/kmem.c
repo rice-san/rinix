@@ -39,7 +39,7 @@ inline static kmemptr_t* kmemptr_next(kmemptr_t* scratch)
 
 void kmem_init(void)
 {
-    alloc_map_page(0xD0000000, PAGE_P | PAGE_RW | PAGE_S);
+	alloc_map_page(0xD0000000, PAGE_P | PAGE_RW | PAGE_S);
     kmem_info->head = (kmemptr_t *)0xD0000000;
     kmem_info->head->size = (0x1000 - 2*sizeof(kmemptr_t));
     kmem_info->head->flags = 0;
@@ -77,7 +77,7 @@ void* kmalloc(size_t bsize)
 {
     int found = 0;
     kmemptr_t* scratch = kmem_info->first_free;
-    while (!found)
+    while (!found && scratch < kmem_info->head + kmem_info->total_length && scratch != NULL)
     {
         if (scratch->flags == KMEM_TAIL)
         {
@@ -102,6 +102,7 @@ void* kmalloc(size_t bsize)
             continue;
         }
     }
+    return NULL;
 }
 
 void kfree(void* ptr)

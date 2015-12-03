@@ -237,7 +237,8 @@ void isr_handler(struct regs *r) {
 	{
 		printf("%s",exception_messages[r->int_no]);
 		printf(" Exception. System Halted!\n");
-		printf("Error Code: %i", r->err_code);
+		printf("Error Code: %i\n", r->err_code);
+		printf("eip: %x\n", r->eip);
 		for(;;);
 	}
 };
