@@ -29,7 +29,7 @@ inline static kmemptr_t* kmemptr_next(kmemptr_t* scratch)
 {
     if (scratch->flags != 0x80)
     {
-        return (kmemptr_t*)(scratch + scratch->size + sizeof(kmemptr_t)); 
+        return (kmemptr_t*)((unsigned int)scratch + scratch->size + sizeof(kmemptr_t)); 
     }
     else
     {
@@ -37,13 +37,23 @@ inline static kmemptr_t* kmemptr_next(kmemptr_t* scratch)
     }
 }
 
+inline static void dump_kmemptr_t(kmemptr_t* ptr)
+{
+	if (ptr != NULL)
+		printd("This Block: %x size: %x prev: %x flags: %x\n", ptr, ptr->size, ptr->prev, ptr->flags);
+}
+
+
 void kmem_init(void)
 {
 	alloc_map_page(0xD0000000, PAGE_P | PAGE_RW | PAGE_S);
+	printd("Size of kmemptr_t: %x\n", sizeof(kmemptr_t));
     kmem_info->head = (kmemptr_t *)0xD0000000;
+    kmem_info->head->prev = kmem_info->head;
     kmem_info->head->size = (0x1000 - 2*sizeof(kmemptr_t));
     kmem_info->head->flags = 0;
     kmem_info->tail = (kmemptr_t*)(0xD0001000 - sizeof(kmemptr_t));
+    kmem_info->tail->prev = kmem_info->head;
     kmem_info->tail->size = 0;
     kmem_info->tail->flags = 0x80;
     kmem_info->first_free = kmem_info->head;
@@ -76,6 +86,7 @@ void kmem_morecore()
 void* kmalloc(size_t bsize)
 {
     int found = 0;
+    printd("Request for block of %x bytes\n", bsize);
     kmemptr_t* scratch = kmem_info->first_free;
     while (!found && scratch < kmem_info->head + kmem_info->total_length && scratch != NULL)
     {
@@ -87,13 +98,13 @@ void* kmalloc(size_t bsize)
         if ((scratch->flags == KMEM_FREE) && (scratch->size > bsize))
         {
             // Let's use and chop this block
-            kmemptr_t* new_ptr = (kmemptr_t*)scratch + sizeof(kmemptr_t) + bsize;
-            new_ptr->size = scratch->size - bsize - sizeof(kmemptr_t);
-            new_ptr->prev = scratch;
-            scratch->size -= bsize;
+            kmemptr_t* new_ptr = ((unsigned int)scratch + sizeof(kmemptr_t) + bsize);
+            new_ptr->size = scratch->size - (bsize + sizeof(kmemptr_t));
+            new_ptr->prev = (unsigned int)scratch;
+            scratch->size = bsize;
             scratch->flags = 0x01;
             new_ptr->flags = 0x00;
-            return scratch + sizeof(kmemptr_t);
+            return (kmemptr_t*)((unsigned int)scratch + sizeof(kmemptr_t));
         }
         else
         {
@@ -111,11 +122,12 @@ void kfree(void* ptr)
     kmemptr_t* prev = scratch->prev; // The previous ptr
     if (scratch->flags & 0x01)
     {
-        if (kmemptr_next(scratch)->flags == KMEM_FREE)
+        if (kmemptr_next(scratch)->flags == KMEM_FREE && kmemptr_next(scratch)->flags != KMEM_TAIL)
         {
             // If the next block is free...
             kmemptr_next(kmemptr_next(scratch))->prev = scratch;
             scratch->size += kmemptr_next(scratch)->size + sizeof(kmemptr_t); // Add the next block to the allocator
+            scratch->flags = KMEM_FREE;
         }
         if (prev->flags == KMEM_FREE)
         {

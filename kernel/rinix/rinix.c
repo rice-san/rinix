@@ -54,5 +54,8 @@ void kmain(void)
 	printd("Page Directory is at address: %x\n", initialPageDirectory);
 	printd("Kernel Begins at %x\n", &kernel_start);
 	printd("Kernel Ends at: %x\n", &kernel_end);
+	int* value = (int*)kmalloc(sizeof(int));
+	*value = 10;
+	kfree((void *)value);
 	for(;;);
 }
