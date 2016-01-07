@@ -100,6 +100,10 @@ void alloc_page_table(uintptr_t virt_addr, uint32_t flags)
 {
 	uintptr_t phys_addr = get_frame(); // Grab a page frame
 	set_page_table(virt_addr, phys_addr, flags); // Set the page frame accordingly
+	uintptr_t* pt = ((uintptr_t *)(0xFFC00000 | ((virt_addr >> 12) * 4) & 0x3FF000)); // Get the virtual mapping of this page table
+	for(int i=0; i<=0x3FF; i++){
+		pt[i] = 0; // Clear this page (and by repitition all pages)
+	}
 }
 
 void dealloc_page_table(uintptr_t virt_addr)
