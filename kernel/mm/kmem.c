@@ -116,6 +116,7 @@ void* kmalloc(size_t bsize)
         {
             // Let's use and chop this block
             kmemptr_t* new_ptr = ((unsigned int)scratch + sizeof(kmemptr_t) + bsize);
+            kmemptr_next(scratch)->prev = new_ptr;
             new_ptr->size = scratch->size - (bsize + sizeof(kmemptr_t));
             new_ptr->prev = (unsigned int)scratch;
             scratch->size = bsize;
@@ -138,7 +139,7 @@ void kfree(void* ptr)
     printd("kfree called\n");
     kmemptr_t* scratch = (kmemptr_t *)(ptr - sizeof(kmemptr_t)); // Get the location of the kmemptr that corresponds to this block
     kmemptr_t* prev = scratch->prev; // The previous ptr
-    if (scratch->flags & 0x01)
+    if (scratch->flags == KMEM_USED)
     {
         if (kmemptr_next(scratch)->flags == KMEM_FREE && kmemptr_next(scratch)->flags != KMEM_TAIL)
         {
@@ -147,12 +148,17 @@ void kfree(void* ptr)
             scratch->size += kmemptr_next(scratch)->size + sizeof(kmemptr_t); // Add the next block to the allocator
             scratch->flags = KMEM_FREE;
         }
-        if (prev->flags == KMEM_FREE)
+        if (prev->flags == KMEM_FREE && prev != scratch)
         {
             // If the previous block is free...
             prev->size += (scratch->size + sizeof(kmemptr_t)); // Add the size of this block to the size of the previous one
             kmemptr_next(scratch)->prev = prev; // Set the previous ptr of the next block to this one.
         }
+        if (scratch->flags == KMEM_USED)
+        {
+			// If this block is in solitary space, and STILL isn't freed...
+			scratch->flags = KMEM_FREE; // We'll have to leave it free and alone.
+		}
     }
     else
     {

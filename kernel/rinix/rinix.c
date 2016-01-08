@@ -58,6 +58,12 @@ void kmain(void)
 	uintptr_t* value = (uintptr_t*)kmalloc((size_t)0x2000);
 	dump_kmem_tables();
 	*value = 10;
+	int* value2 = (uintptr_t*)kmalloc(sizeof(int));
+	dump_kmem_tables();
+	*value2 = 5;
 	kfree((void *)value);
+	dump_kmem_tables();
+	kfree((void *)value2);
+	dump_kmem_tables();
 	for(;;);
 }
