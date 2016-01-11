@@ -72,28 +72,33 @@ void kmem_init(void)
     kmem_info->total_length = 0x1000;
 }
 
-void kmem_morecore()
+void kmem_morecore(unsigned int block_count)
 {
     printd("kmem_morecore() called\n");
-    alloc_map_page(0xD0000000 + kmem_info->total_length, 0x3);
-    kmem_info->total_length += 0x1000;
-    kmemptr_t* kmem_tail_prev = kmem_info->tail->prev;
-    printd("Before kmemptr_t");
-    dump_kmemptr_t(kmem_tail_prev);
-    if (kmem_tail_prev->flags == KMEM_FREE)
+    printd("block_count: %i\n", block_count);
+    for(int i = 0; i<block_count; i++)
     {
-        kmem_tail_prev->size += (unsigned int)0x1000;
-        kmem_info->tail = kmemptr_next(kmem_tail_prev);
-        kmem_info->tail->prev = kmem_tail_prev;
-        kmem_info->tail->size = 0;
-        kmem_info->tail->flags = KMEM_TAIL;
-    }
-    else if(kmem_tail_prev->flags == KMEM_USED)
-    {
-        kmemptr_t* scratch = kmem_info->tail;
-        scratch->size = 0x1000 - sizeof(kmemptr_t);
-        kmem_info->tail = scratch + (unsigned int)0x1000;
-        kmem_info->tail->flags = KMEM_TAIL;
+        printd("Cycles remaining: %i\n", block_count - i);
+        alloc_map_page(0xD0000000 + kmem_info->total_length, 0x3);
+        kmem_info->total_length += 0x1000;
+        kmemptr_t* kmem_tail_prev = kmem_info->tail->prev;
+        printd("Before kmemptr_t");
+        dump_kmemptr_t(kmem_tail_prev);
+        if (kmem_tail_prev->flags == KMEM_FREE)
+        {
+            kmem_tail_prev->size += (unsigned int)0x1000;
+            kmem_info->tail = kmemptr_next(kmem_tail_prev);
+            kmem_info->tail->prev = kmem_tail_prev;
+            kmem_info->tail->size = 0;
+            kmem_info->tail->flags = KMEM_TAIL;
+        }
+        else if(kmem_tail_prev->flags == KMEM_USED)
+        {
+            kmemptr_t* scratch = kmem_info->tail;
+            scratch->size = 0x1000 - sizeof(kmemptr_t);
+            kmem_info->tail = scratch + (unsigned int)0x1000;
+            kmem_info->tail->flags = KMEM_TAIL;
+        }
     }
 }
 
@@ -108,11 +113,21 @@ void* kmalloc(size_t bsize)
     {
         if (scratch->flags == KMEM_TAIL)
         {
-            kmem_morecore();
+            // Let's decide how many block to allocate (so we don't scan the list a million times.)
+            uint32_t size_req;
+            if (scratch->prev->flags == KMEM_FREE)
+            {
+                size_req = (bsize + sizeof(kmemptr_t)) - scratch->prev->size; 
+            }
+            else
+            {
+                size_req = bsize + sizeof(kmemptr_t);
+            }
+            kmem_morecore( ((size_req/0x1000) + ( (size_req % 0x1000) ? 1 : 0 )) );
             scratch = kmem_info->first_free;
         }
         
-        if ((scratch->flags == KMEM_FREE) && (scratch->size > bsize))
+        if ((scratch->flags == KMEM_FREE) && (scratch->size > (bsize + sizeof(kmemptr_t))))
         {
             // Let's use and chop this block
             kmemptr_t* new_ptr = ((unsigned int)scratch + sizeof(kmemptr_t) + bsize);
