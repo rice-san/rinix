@@ -82,7 +82,7 @@ void kmem_morecore(unsigned int block_count)
         alloc_map_page(0xD0000000 + kmem_info->total_length, 0x3);
         kmem_info->total_length += 0x1000;
         kmemptr_t* kmem_tail_prev = kmem_info->tail->prev;
-        printd("Before kmemptr_t");
+        printd("Last Memory Block: ");
         dump_kmemptr_t(kmem_tail_prev);
         if (kmem_tail_prev->flags == KMEM_FREE)
         {
