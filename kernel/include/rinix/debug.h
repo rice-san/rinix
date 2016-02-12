@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 // Uncomment this for debug
-#define DEBUG 1
+//#define DEBUG 1
 
 #define nullAction( ) \
 do { ; } \
