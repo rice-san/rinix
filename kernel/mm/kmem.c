@@ -39,12 +39,15 @@ inline static kmemptr_t* kmemptr_next(kmemptr_t* scratch)
 
 inline static void dump_kmemptr_t(kmemptr_t* ptr)
 {
+	#ifdef DEBUG
 	if (ptr != NULL)
 		printd("This Block: %x size: %x prev: %x flags: %x Next Block: %x\n", ptr, ptr->size, ptr->prev, ptr->flags, kmemptr_next(ptr));
+	#endif
 }
 
 void dump_kmem_tables(void)
 {
+	#ifdef DEBUG
     printd("kmem_tables dump\n");
     kmemptr_t* scratch = kmem_info->head;
     printd("heap size: %x\n", kmem_info->total_length);
@@ -54,6 +57,7 @@ void dump_kmem_tables(void)
         dump_kmemptr_t(scratch);
         scratch = kmemptr_next(scratch);
     }while(scratch->flags != KMEM_TAIL);
+    #endif
 }
 
 void kmem_init(void)
