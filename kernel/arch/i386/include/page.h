@@ -17,6 +17,7 @@
 typedef uint32_t uaddr_t; // Set address size for architecture.
 typedef uint32_t pte_t; // Set size of an page table entry
 
+#define PAGE_SIZE 4096
 #define ADDR_BITS 32
 
 #define _PGDT_BITS 10 		// Size in bits
