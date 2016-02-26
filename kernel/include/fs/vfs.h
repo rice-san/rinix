@@ -10,8 +10,8 @@ struct dirent // One of these is returned by the readdir call, according to POSI
 
 
 // Function Typedefs
-typedef uint32_t (*vfs_read_t)(inode_t*, uint32_t, uint32_t, uint8_t);
-typedef uint32_t (*vfs_write_t)(inode_t*, uint32_t, uint32_t, uint8_t);
+typedef uint32_t (*vfs_read_t)(inode_t*, uint32_t, uint32_t, uint8_t*);
+typedef uint32_t (*vfs_write_t)(inode_t*, uint32_t, uint32_t, uint8_t*);
 typedef void (*vfs_open_t)(inode_t*);
 typedef void (*vfs_close_t)(inode_t*);
 typedef struct dirent* (*vfs_readdir_t)(inode_t*, uint32_t);
