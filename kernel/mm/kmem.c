@@ -5,7 +5,7 @@
 #include <mm/kmem.h>
 #include <mm/mem.h>
 
-#define KMEM_ALIGN_SIZE 0x8
+#define KMEM_ALIGN_SIZE 0x10
 
 #define KMEM_FREE 0x00
 #define KMEM_USED 0x01
@@ -101,10 +101,12 @@ void kmem_morecore(unsigned int block_count)
         if (kmem_tail_prev->flags == KMEM_FREE)
         {
             kmem_tail_prev->size += (unsigned int)PAGE_SIZE;
-            kmem_info->tail = kmemptr_next(kmem_tail_prev);
+            kmem_info->tail = ((unsigned int)kmem_tail_prev + kmem_tail_prev->size + sizeof(kmemptr_t));
             kmem_info->tail->prev = kmem_tail_prev;
             kmem_info->tail->size = 0;
             kmem_info->tail->flags = KMEM_TAIL;
+            kmem_tail_prev->next = kmem_info->tail;
+            kmem_info->tail->next = kmem_info->tail;
         }
         else if(kmem_tail_prev->flags == KMEM_USED)
         {
@@ -112,6 +114,8 @@ void kmem_morecore(unsigned int block_count)
             scratch->size = PAGE_SIZE - sizeof(kmemptr_t);
             kmem_info->tail = scratch + (unsigned int)PAGE_SIZE;
             kmem_info->tail->flags = KMEM_TAIL;
+            kmem_info->tail->next = kmem_info->tail;
+            scratch->next = kmem_info->tail;
         }
     }
 }
@@ -181,8 +185,8 @@ void kfree(void* ptr)
         {
             // If the next block is free...
             kmemptr_next(kmemptr_next(scratch))->prev = scratch; // The set the prev ptr of the block after that to this one
-            scratch->next = kmemptr_next(kmemptr_next(scratch)); // Set the next ptr of this block to the one after that.
             scratch->size += kmemptr_next(scratch)->size + sizeof(kmemptr_t); // Add the next block to the allocator
+            scratch->next = kmemptr_next(kmemptr_next(scratch)); // Set the next ptr of this block to the one after that.
             scratch->flags = KMEM_FREE; // set this block to free
         }
         if (prev->flags == KMEM_FREE && prev != scratch)
