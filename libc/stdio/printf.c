@@ -208,3 +208,110 @@ int printf(const char* restrict format, ...)
 		
 		return written;
 }
+
+int vprintf(const char* format, va_list arg)
+{
+		int written = 0;
+		size_t amount;
+		bool rejected_bad_specifier = false;
+		
+		while ( *format != '\0' )
+		{
+				if( *format != '%' )
+				{
+						print_c:
+							amount = 1;
+							while (format[amount] && format[amount] != '%' )
+								amount++;
+							print(format, amount);
+							format += amount;
+							written += amount;
+							continue;
+				}
+				
+				const char* format_begun_at = format;
+				
+				if( *(++format) == '%')
+					goto print_c;
+					
+				if ( rejected_bad_specifier )
+				{
+				incomprehensible_conversion:
+					rejected_bad_specifier = true;
+					format = format_begun_at;
+					goto print_c;
+				}
+				
+				if ( *format == 'c' )
+				{
+						format++;
+						char c = (char) va_arg(arg, int /* char promotes to int */);
+						print(&c, sizeof(c));
+				}
+				else if ( *format == 's' )
+				{
+						format++;
+						const char* s = va_arg(arg, const char*);
+						print(s, strlen(s));
+				}
+				else if ( *format == 'd' || *format == 'i' || *format == 'o') {
+						int i = va_arg(arg, int);
+						int radius;
+						if (*format == 'd' || *format == 'i')
+						{
+							radius = 10;
+						}
+						else if (*format == 'o')
+						{
+							radius = 8;
+						}
+						else
+						{
+							radius = 10;
+						}
+						format++;
+						char s[64];
+						if (radius == 10)
+						{
+							itoa(i, s, radius);
+						}
+						else
+						{
+							utoa(i, s, radius);
+						}
+						print(s, strlen(s));
+				}
+				else if ( *format == 'x' || *format == 'l' )
+				{
+						long l = va_arg(arg, long);
+						int radius;
+						if (*format == 'x')
+						{
+							radius = 16;
+							print("0x", (size_t)2);
+						}
+						else
+						{
+							radius = 10;
+						}
+						format++;
+						char s[64];
+						if (radius == 10)
+						{
+							ltoa(l, s, radius);
+						}
+						else
+						{
+							ultoa(l, s, radius);
+						}
+						print(s, strlen(s));
+				}
+				else
+				{
+						goto incomprehensible_conversion;
+				}
+				
+		}
+		
+		return written;
+}

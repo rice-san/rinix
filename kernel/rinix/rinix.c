@@ -29,6 +29,8 @@ inline uint8_t _check_frame(uintptr_t frame)
 
 uint32_t initialPageDirectory;
 
+extern void panic_splash(void);
+
 void initk(multiboot_info_t *mbd, uint32_t initialPD)
 {
 	initialPageDirectory = initialPD;
@@ -65,5 +67,6 @@ void kmain(void)
 	dump_kmem_tables();
 	kfree((void *)value2);
 	dump_kmem_tables();
+	panic_splash();
 	for(;;);
 }

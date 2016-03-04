@@ -36,6 +36,8 @@ $(KERNEL_MEM_OBJS) \
 rinix/rinix.o \
 rinix/io_port.o \
 rinix/pause.o \
+rinix/panic.o \
+
  
 CRTI_OBJ:=$(ARCHDIR)/crti.o
 CRTBEGIN_OBJ:=$(shell $(CC) $(CFLAGS) $(LDFLAGS) -print-file-name=crtbegin.o)

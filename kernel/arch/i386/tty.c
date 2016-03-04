@@ -62,6 +62,10 @@ void term_setcolor(uint8_t color)
 
 void term_putat(char c, size_t x, size_t y)
 {
+	if((x > VGA_WIDTH-1 || x < 0) || (y > VGA_HEIGHT-1 || y < 0 ))
+	{
+		return; // Ignore anything that goes off the screen
+	}
 	const size_t index = y * VGA_WIDTH + x;
 	term_buf[index] = make_vgaentry(c, term_color);
 }
