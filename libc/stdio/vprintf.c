@@ -97,11 +97,8 @@ static void ultoa(unsigned long num, char *buffer, int base)
 	reverse(buffer);
 }
 
-int printf(const char* restrict format, ...)
+int vprintf(const char* format, va_list param)
 {
-		va_list parameters;
-		va_start(parameters, format);
-		
 		int written = 0;
 		size_t amount;
 		bool rejected_bad_specifier = false;
@@ -136,17 +133,17 @@ int printf(const char* restrict format, ...)
 				if ( *format == 'c' )
 				{
 						format++;
-						char c = (char) va_arg(parameters, int /* char promotes to int */);
+						char c = (char) va_arg(param, int /* char promotes to int */);
 						print(&c, sizeof(c));
 				}
 				else if ( *format == 's' )
 				{
 						format++;
-						const char* s = va_arg(parameters, const char*);
+						const char* s = va_arg(param, const char*);
 						print(s, strlen(s));
 				}
 				else if ( *format == 'd' || *format == 'i' || *format == 'o') {
-						int i = va_arg(parameters, int);
+						int i = va_arg(param, int);
 						int radius;
 						if (*format == 'd' || *format == 'i')
 						{
@@ -174,7 +171,7 @@ int printf(const char* restrict format, ...)
 				}
 				else if ( *format == 'x' || *format == 'l' )
 				{
-						long l = va_arg(parameters, long);
+						long l = va_arg(param, long);
 						int radius;
 						if (*format == 'x')
 						{
@@ -203,8 +200,6 @@ int printf(const char* restrict format, ...)
 				}
 				
 		}
-		
-		va_end(parameters);
 		
 		return written;
 }

@@ -3,7 +3,7 @@
 
 // rinix.h - Functions for the whole system
 
-void panic(char *, ...);
+void panic(const char *, ...);
 
 
 

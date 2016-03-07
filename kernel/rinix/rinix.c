@@ -18,6 +18,7 @@
 #include <rinix/tty.h>
 #include <rinix/timer.h>
 #include <rinix/vga.h>
+#include <rinix/rinix.h>
 
 #define ADJUST_MMAP(x) ((multiboot_memory_map_t *)(0xC0400000 | ((unsigned int)x & 0xFFF)))
 #define ADJUST_KERNEL(x) ((((unsigned long)x) - (unsigned long)0xC0000000))
@@ -67,6 +68,6 @@ void kmain(void)
 	dump_kmem_tables();
 	kfree((void *)value2);
 	dump_kmem_tables();
-	panic_splash();
+	//panic("Error");
 	for(;;);
 }
