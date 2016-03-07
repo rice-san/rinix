@@ -150,7 +150,6 @@ isr16:
 # 17: Alignment Check Exception (486+)
 isr17: 
         cli
-        push $0
         push $17
         jmp isr_common_stub
 
@@ -230,7 +229,6 @@ isr29:
 
 isr30:
 		cli
-		push $0
 		push $30
 		jmp isr_common_stub
 

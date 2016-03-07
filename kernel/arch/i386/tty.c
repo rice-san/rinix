@@ -62,7 +62,7 @@ void term_setcolor(uint8_t color)
 
 void term_putat(char c, size_t x, size_t y)
 {
-	if((x > VGA_WIDTH-1 || x < 0) || (y > VGA_HEIGHT-1 || y < 0 ))
+	if((x >= VGA_WIDTH) || (y >= VGA_HEIGHT))
 	{
 		return; // Ignore anything that goes off the screen
 	}
