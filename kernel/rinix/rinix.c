@@ -57,6 +57,7 @@ void kmain(void)
 	printd("Page Directory is at address: %x\n", initialPageDirectory);
 	printd("Kernel Begins at %x\n", &kernel_start);
 	printd("Kernel Ends at: %x\n", &kernel_end);
+	#ifdef DEBUG
 	dump_kmem_tables();
 	uintptr_t* value = (uintptr_t*)kmalloc((size_t)0x2000);
 	dump_kmem_tables();
@@ -68,6 +69,7 @@ void kmain(void)
 	dump_kmem_tables();
 	kfree((void *)value2);
 	dump_kmem_tables();
-	//panic("Error");
+	panic("Error");
+	#endif
 	for(;;);
 }

@@ -43,3 +43,9 @@ void timer_install(void)
   /* Installs 'timer_handler' to IRQ0 */
   install_irq_handler(0, timer_handler);
 }
+
+unsigned int get_ticks(void)
+{
+	return timer_ticks;
+}
+
