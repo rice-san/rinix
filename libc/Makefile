@@ -1,5 +1,6 @@
-HOST?=$(shell ../default-host.sh)
-HOSTARCH:=$(shell ../target-triplet-to-arch.sh $(HOST))
+DEFAULT_HOST!=../default-host.sh
+HOST?=DEFAULT_HOST
+HOSTARCH!=../target-triplet-to-arch.sh $(HOST)
  
 CFLAGS?=-O2 -g
 CPPFLAGS?=
@@ -12,21 +13,21 @@ EXEC_PREFIX?=$(PREFIX)
 INCLUDEDIR?=$(PREFIX)/include
 LIBDIR?=$(EXEC_PREFIX)/lib
  
-CFLAGS:=$(CFLAGS) -Wall -Wextra
-CPPFLAGS:=$(CPPFLAGS) -D__is_rinix_libc -Iinclude
-LIBK_CFLAGS:=$(CFLAGS) -ffreestanding -fbuiltin
-LIBK_CPPFLAGS:=$(CPPFLAGS) -D__is_rinix_kernel
+CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra
+CPPFLAGS:=$(CPPFLAGS) -D__is_libc -Iinclude
+LIBK_CFLAGS:=$(CFLAGS)
+LIBK_CPPFLAGS:=$(CPPFLAGS) -D__is_libk
  
-ARCHDIR:=arch/$(HOSTARCH)
+ARCHDIR=arch/$(HOSTARCH)
  
 include $(ARCHDIR)/make.config
  
 CFLAGS:=$(CFLAGS) $(ARCH_CFLAGS)
-CPFLAGS:=$(CPPFLAGS) $(ARCH_CPPFLAGS)
+CPPFLAGS:=$(CPPFLAGS) $(ARCH_CPPFLAGS)
 LIBK_CFLAGS:=$(LIBK_CFLAGS) $(KERNEL_ARCH_CFLAGS)
-LIBK_CPFLAGS:=$(LIBK_CPPFLAGS) $(KERNEL_ARCH_CPPFLAGS)
+LIBK_CPPFLAGS:=$(LIBK_CPPFLAGS) $(KERNEL_ARCH_CPPFLAGS)
  
-FREEOBJS:=\
+FREEOBJS=\
 $(ARCH_FREEOBJS) \
 stdio/printf.o \
 stdio/putchar.o \
@@ -39,51 +40,55 @@ string/memmove.o \
 string/memset.o \
 string/strlen.o \
  
-HOSTEDOBJS:=\
+HOSTEDOBJS=\
 $(ARCH_HOSTEDOBJS) \
  
-OBJS:=\
+OBJS=\
 $(FREEOBJS) \
 $(HOSTEDOBJS) \
  
-LIBK_OBJS:=$(FREEOBJS:.o=.libk.o)
+LIBK_OBJS=$(FREEOBJS:.o=.libk.o)
  
-BINARIES=libc.a libg.a libk.a
- 
-all: $(BINARIES)
+#BINARIES=libc.a libk.a # Not ready for libc yet.
+BINARIES=libk.a
  
 .PHONY: all clean install install-headers install-libs
+.SUFFIXES: .o .libk.o .c .S
+ 
+all: $(BINARIES)
  
 libc.a: $(OBJS)
 	$(AR) rcs $@ $(OBJS)
  
-libg.a:
-	$(AR) rcs $@
- 
 libk.a: $(LIBK_OBJS)
 	$(AR) rcs $@ $(LIBK_OBJS)
  
-%.o: %.c
-	$(CC) -c $< -o $@ -std=gnu11 $(CFLAGS) $(CPPFLAGS)
+.c.o:
+	$(CC) -MD -c $< -o $@ -std=gnu11 $(CFLAGS) $(CPPFLAGS)
  
-%.o: %.S
-	$(CC) -c $< -o $@ $(CFLAGS) $(CPPFLAGS)
+.c.S:
+	$(CC) -MD -c $< -o $@ $(CFLAGS) $(CPPFLAGS)
  
-%.libk.o: %.c
-	$(CC) -c $< -o $@ -std=gnu11 $(LIBK_CFLAGS) $(LIBK_CPPFLAGS)
+.c.libk.o:
+	$(CC) -MD -c $< -o $@ -std=gnu11 $(LIBK_CFLAGS) $(LIBK_CPPFLAGS)
  
-%.libk.o: %.S
-	$(CC) -c $< -o $@ $(LIBK_CFLAGS) $(LIBK_CPPFLAGS)
+.S.libk.o:
+	$(CC) -MD -c $< -o $@ $(LIBK_CFLAGS) $(LIBK_CPPFLAGS)
  
 clean:
-	rm -f $(BINARIES) $(OBJS) $(LIBK_OBJS) *.o */*.o */*/*.o
+	rm -f $(BINARIES) *.a
+	rm -f $(OBJS) $(LIBK_OBJS) *.o */*.o */*/*.o
+	rm -f $(OBJS:.o=.d) $(LIBK_OBJS:.o=.d) *.d */*.d */*/*.d
  
 install: install-headers install-libs
  
 install-headers:
-	mkdir -p $(DESTDIR)$(INCLUDEDIR)
-	cp -RTv include $(DESTDIR)$(INCLUDEDIR)
+	gmkdir -p $(DESTDIR)$(INCLUDEDIR)
+	gcp -R --preserve=timestamps include/. $(DESTDIR)$(INCLUDEDIR)/.
  
 install-libs: $(BINARIES)
-	mkdir -p $(DESTDIR)$(LIBDIR)
-	cp $(BINARIES) $(DESTDIR)$(LIBDIR)
+	gmkdir -p $(DESTDIR)$(LIBDIR)
+	gcp $(BINARIES) $(DESTDIR)$(LIBDIR)
+ 
+-include $(OBJS:.o=.d)
+-include $(LIBK_OBJS:.o=.d)

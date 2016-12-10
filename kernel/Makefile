@@ -1,5 +1,6 @@
-HOST?=$(shell ../default-host.sh)
-HOSTARCH:=$(shell ../target-triplet-to-arch.sh $(HOST))
+DEFAULT_HOST!=../default-host.sh
+HOST?=DEFAULT_HOST
+HOSTARCH!=../target-triplet-to-arch.sh $(HOST)
  
 CFLAGS?=-O2 -g
 CPPFLAGS?=
@@ -12,8 +13,8 @@ EXEC_PREFIX?=$(PREFIX)
 BOOTDIR?=$(EXEC_PREFIX)/boot
 INCLUDEDIR?=$(PREFIX)/include
  
-CFLAGS:=$(CFLAGS) -ffreestanding -fbuiltin -Wall -Wextra
-CPPFLAGS:=$(CPPFLAGS) -D__is_rinix_kernel -Iinclude
+CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra
+CPPFLAGS:=$(CPPFLAGS) -D__is_kernel -Iinclude
 LDFLAGS:=$(LDFLAGS)
 LIBS:=$(LIBS) -nostdlib -lk -lgcc
  
@@ -26,61 +27,68 @@ include $(MEMDIR)/make.config
 include $(FSDIR)/make.config
  
 CFLAGS:=$(CFLAGS) $(KERNEL_ARCH_CFLAGS)
-CPFLAGS:=$(CPPFLAGS) $(KERNEL_ARCH_CPPFLAGS)
+CPPFLAGS:=$(CPPFLAGS) $(KERNEL_ARCH_CPPFLAGS)
 LDFLAGS:=$(LDFLAGS) $(KERNEL_ARCH_LDFLAGS)
 LIBS:=$(LIBS) $(KERNEL_ARCH_LIBS)
  
-OBJS:=\
+KERNEL_OBJS=\
 $(KERNEL_ARCH_OBJS) \
 $(KERNEL_MEM_OBJS) \
 rinix/rinix.o \
 rinix/io_port.o \
 rinix/pause.o \
 rinix/panic.o \
-
  
-CRTI_OBJ:=$(ARCHDIR)/crti.o
-CRTBEGIN_OBJ:=$(shell $(CC) $(CFLAGS) $(LDFLAGS) -print-file-name=crtbegin.o)
-CRTEND_OBJ:=$(shell $(CC) $(CFLAGS) $(LDFLAGS) -print-file-name=crtend.o)
-CRTN_OBJ:=$(ARCHDIR)/crtn.o
+OBJS=\
+$(ARCHDIR)/crti.o \
+$(ARCHDIR)/crtbegin.o \
+$(KERNEL_OBJS) \
+$(ARCHDIR)/crtend.o \
+$(ARCHDIR)/crtn.o \
  
-ALL_OUR_OBJS:=\
-$(CRTI_OBJ) \
-$(OBJS) \
-$(CRTN_OBJ) \
+LINK_LIST=\
+$(LDFLAGS) \
+$(ARCHDIR)/crti.o \
+$(ARCHDIR)/crtbegin.o \
+$(KERNEL_OBJS) \
+$(LIBS) \
+$(ARCHDIR)/crtend.o \
+$(ARCHDIR)/crtn.o \
  
-OBJ_LINK_LIST:=\
-$(CRTI_OBJ) \
-$(CRTBEGIN_OBJ) \
-$(OBJS) \
-$(CRTEND_OBJ) \
-$(CRTN_OBJ) \
+.PHONY: all clean install install-headers install-kernel
+.SUFFIXES: .o .c .S
  
 all: rinix.kernel
  
-.PHONY: all clean install install-headers install-kernel
+rinix.kernel: $(OBJS) $(ARCHDIR)/linker.ld
+	$(CC) -T $(ARCHDIR)/linker.ld -o $@ $(CFLAGS) $(LINK_LIST)
+	grub-file --is-x86-multiboot rinix.kernel
  
-rinix.kernel: $(OBJ_LINK_LIST) $(ARCHDIR)/linker.ld
-	$(CC) -T $(ARCHDIR)/linker.ld -o $@ $(CFLAGS) $(OBJ_LINK_LIST) $(LDFLAGS) $(LIBS)
+$(ARCHDIR)/crtbegin.o $(ARCHDIR)/crtend.o:
+	OBJ=`$(CC) $(CFLAGS) $(LDFLAGS) -print-file-name=$(@F)` && cp "$$OBJ" $@
  
-%.o: %.c
-	$(CC) -c $< -o $@ -std=gnu11 $(CFLAGS) $(CPPFLAGS)
+.c.o:
+	$(CC) -MD -c $< -o $@ -std=gnu11 $(CFLAGS) $(CPPFLAGS)
  
-%.o: %.S
-	$(CC) -c $< -o $@ $(CFLAGS) $(CPPFLAGS)
+.S.o:
+	$(CC) -MD -c $< -o $@ $(CFLAGS) $(CPPFLAGS)
  
 clean:
-	rm -f rinix.kernel $(OBJS) $(ALL_OUR_OBJS) *.o */*.o */*/*.o
+	rm -f rinix.kernel
+	rm -f $(OBJS) *.o */*.o */*/*.o
+	rm -f $(OBJS:.o=.d) *.d */*.d */*/*.d
  
 install: install-headers install-arch-headers install-kernel
  
 install-headers:
-	mkdir -p $(DESTDIR)$(INCLUDEDIR)
-	cp -RTv include $(DESTDIR)$(INCLUDEDIR)
+	gmkdir -p $(DESTDIR)$(INCLUDEDIR)
+	gcp -R --preserve=timestamps include/. $(DESTDIR)$(INCLUDEDIR)/.
 
 install-arch-headers:
-	cp -RTv arch/$(HOSTARCH)/include $(DESTDIR)$(INCLUDEDIR)/arch
- 
+	gcp -R arch/$(HOSTARCH)/include $(DESTDIR)$(INCLUDEDIR)/arch
+
 install-kernel: rinix.kernel
-	mkdir -p $(DESTDIR)$(BOOTDIR)
-	cp rinix.kernel $(DESTDIR)$(BOOTDIR)
+	gmkdir -p $(DESTDIR)$(BOOTDIR)
+	gcp rinix.kernel $(DESTDIR)$(BOOTDIR)
+ 
+-include $(OBJS:.o=.d)

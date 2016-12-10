@@ -1,3 +1,7 @@
 *.iso
 isodir
 sysroot
+*.sh
+*.o
+*.d
+.DS_Store
