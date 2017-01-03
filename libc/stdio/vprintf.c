@@ -28,7 +28,7 @@ static void itoa(int num, char *buffer, int base)
 	if(base <= 0 || base > 35)
 		return;
 	
-	int i, sign;
+	int i, sign = 0;
 	
 	char *digits = "0123456789abcdefghijklmnopqrstuvwxyz"; //Base can be from 1-35;
 	
@@ -51,10 +51,11 @@ static void utoa(unsigned int num, char *buffer, int base)
 	if(base <= 0 || base > 35)
 		return;
 	
-	int i, sign;
+	int i;
 	
 	char *digits = "0123456789abcdefghijklmnopqrstuvwxyz"; //Base can be from 1-35;
 	
+	i = 0;
 	// Go to work
 	do {
 		buffer[i++] = digits[num % base];
@@ -72,6 +73,9 @@ static void ltoa(long num, char *buffer, int base)
 	
 	char *digits = "0123456789abcdefghijklmnopqrstuvwxyz"; //Base can be from 1-35;
 	
+	if ((sign = num) < 0)	// Get the sign
+		num = -num;	// Make it positive
+	i = 0;
 	// Go to work
 	do {
 		buffer[i++] = digits[num % base];
@@ -85,10 +89,11 @@ static void ultoa(unsigned long num, char *buffer, int base)
 	if(base <= 0 || base > 35)
 		return;
 	
-	int i, sign;
+	int i;
 	
 	char *digits = "0123456789abcdefghijklmnopqrstuvwxyz"; //Base can be from 1-35;
 	
+	i = 0;
 	// Go to work
 	do {
 		buffer[i++] = digits[num % base];
@@ -97,7 +102,7 @@ static void ultoa(unsigned long num, char *buffer, int base)
 	reverse(buffer);
 }
 
-int vprintf(const char* format, va_list param)
+int vprintf(const char* restrict format, va_list param)
 {
 		int written = 0;
 		size_t amount;

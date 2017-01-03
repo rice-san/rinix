@@ -41,8 +41,17 @@ void term_init(void)
 {
 	term_y = 0;
 	term_x = 0;
-	term_color = make_color(COLOR_LIGHT_GREY, COLOR_BLACK);
+	term_color = make_color(COLOR_WHITE, COLOR_WHITE);
 	term_buf = VGA_MEMORY;
+	for (size_t y = 0; y < VGA_HEIGHT; y++)
+	{
+			for(size_t x = 0; x < VGA_WIDTH; x++)
+			{
+					const size_t index = y * VGA_WIDTH + x;
+					term_buf[index] = make_vgaentry(' ', term_color);
+			}
+	}
+	term_color = make_color(COLOR_WHITE, COLOR_BLACK);
 	for (size_t y = 0; y < VGA_HEIGHT; y++)
 	{
 			for(size_t x = 0; x < VGA_WIDTH; x++)

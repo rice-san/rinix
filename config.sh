@@ -1,6 +1,8 @@
 SYSTEM_HEADER_PROJECTS="libc kernel"
 PROJECTS="libc kernel"
 
+export PATH="$HOME/opt/cross/bin:$PATH"
+
 export MAKE=${MAKE:-gmake}
 export HOST=${HOST:-$(./default-host.sh)}
 

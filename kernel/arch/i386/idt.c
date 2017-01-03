@@ -239,6 +239,12 @@ void isr_handler(struct regs *r) {
 		printf(" Exception. System Halted!\n");
 		printf("Error Code: %i\n", r->err_code);
 		printf("eip: %x\n", r->eip);
+		//TODO: Create seperate ISR handlers in another file
+		if (r->int_no == 14 ){
+			intptr_t cr2;
+			asm ("movl %%esp, %0" : "=r" (cr2) );
+			printf("cr2 value: %x\n", cr2);
+		}
 		for(;;);
 	}
 };

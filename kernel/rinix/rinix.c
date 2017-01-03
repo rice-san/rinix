@@ -30,8 +30,7 @@ inline uint8_t _check_frame(uintptr_t frame)
 
 uint32_t initialPageDirectory;
 
-extern void panic_splash(void);
-extern void panic(const char *, ...);
+//extern void panic_splash(void);
 
 void initk(multiboot_info_t *mbd, uint32_t initialPD)
 {
@@ -43,11 +42,18 @@ void initk(multiboot_info_t *mbd, uint32_t initialPD)
 	printf("rinix-%s v%d.%d.%d", ARCH_NAME, _RINIX_VERSION_MAJOR, _RINIX_VERSION_MINOR, _RINIX_VERSION_RELEASE);
 	printd(" (Debug Mode)");
 	printf("\n");
+	printd("sizeof int: %d\nsizeof long: %d\nsizeof char: %d\nsizeof int*: %d\n", sizeof(int), sizeof(long), sizeof(char), sizeof(int*));
+	printd("Multiboot is at: %x\n", mbd);
 	arch_init();	// Perform architecture dependent initialization./
-	
+	printf("Multiboot is at: %x\n", mbd);
+	if(mbd != 0){
+		printd("Multiboot Info is non-null\n");
+	}
 	// Initialize the Memory Allocators with the Multiboot Information
 	page_init(initialPageDirectory);
+	//flash_screen();
 	mem_init(mbd);
+	//flash_screen();
 	
 	arch_finish_init();
 }
@@ -70,7 +76,7 @@ void kmain(void)
 	dump_kmem_tables();
 	kfree((void *)value2);
 	dump_kmem_tables();
-	panic("Error");
+	//panic("Error");
 	#endif
 	for(;;);
 }

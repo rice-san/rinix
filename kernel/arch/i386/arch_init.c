@@ -14,6 +14,7 @@ void arch_init(void) {
 	idt_init();
 	timer_install();
 	keyboard_install();
+	flash_screen();
 }
 
 void arch_finish_init(void){

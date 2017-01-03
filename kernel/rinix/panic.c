@@ -86,7 +86,7 @@ static void print_panic_joke(void)
 	#ifdef PANIC_JOKE
 	//term_setcolor(make_color(COLOR_RED, COLOR_BLACK));
 	char* selected_str = panic_messages[message_select()];
-	term_x = ((VGA_WIDTH - strlen(selected_str)) / 2);
+	//term_x = ((VGA_WIDTH - strlen(selected_str)) / 2);
 	printf("\n%s", selected_str); // Later we'll randomize these messages!
 	term_setcolor(make_color(COLOR_LIGHT_GREY, COLOR_BLACK));
 	printf("\n");

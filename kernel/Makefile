@@ -38,6 +38,7 @@ rinix/rinix.o \
 rinix/io_port.o \
 rinix/pause.o \
 rinix/panic.o \
+rinix/debug.o \
  
 OBJS=\
 $(ARCHDIR)/crti.o \

@@ -24,4 +24,6 @@ while(0)
 	
 #endif
 
+//void flash_screen(void);
+
 #endif

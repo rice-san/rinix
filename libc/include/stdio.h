@@ -11,7 +11,7 @@ extern "C" {
 #endif
 
 int printf(const char* __restrict, ...);
-int vprintf(const char* str, va_list arg);
+int vprintf(const char* __restrict, va_list);
 int putchar(int);
 int puts(const char*);
 
