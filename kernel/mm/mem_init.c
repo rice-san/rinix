@@ -1,6 +1,7 @@
 #include <mm/bitmap.h>
 #include <mm/kmem.h>
 #include <mm/mem.h>
+#include <mm/pmm.h>
 
 #include <arch/info.h>
 #include <arch/page.h>
@@ -17,19 +18,19 @@
 
 
 
-int bitmap_size = 0; 
+int bitmap_size = 0;
 
 
 void kernel_bitmap_init(multiboot_info_t* mbd)
 {
 	kernel_length = (&kernel_end - &kernel_start);
-	
+
 	unsigned long section_start = 0;
 	unsigned long section_end = 0;
 	unsigned long section_size = 0;
-	
+
 	unsigned long bitmap_place;
-	
+
 	unsigned long try_bitmap_start = 0;
 	unsigned long try_bitmap_end = 0;
 	printd("Multiboot Info: %x\n", &mbd);
@@ -53,7 +54,7 @@ void kernel_bitmap_init(multiboot_info_t* mbd)
 			if(mmap->type == 1)
 			{
 				usable_mem += mmap->len;
-				_debug( term_setcolor( make_color(COLOR_GREEN, COLOR_BLACK))); 
+				_debug( term_setcolor( make_color(COLOR_GREEN, COLOR_BLACK)));
 			}
 			else
 			{
@@ -107,7 +108,7 @@ void kernel_bitmap_init(multiboot_info_t* mbd)
 
 void mem_init(multiboot_info_t* mbd)
 {
-	kernel_bitmap_init(mbd);
+	__pmm_init(mbd);
 	kmem_init();
 }
 

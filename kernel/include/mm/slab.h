@@ -32,6 +32,7 @@ typedef struct slab_allocator{
 
 // Allocation functions
 
+void __slab_init(void);
 slab_alloc_t* slab_init(size_t, int);
 void* slab_alloc(slab_alloc_t*);
 void slab_free(void*);

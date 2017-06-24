@@ -1,5 +1,6 @@
 #include <arch/page.h>
 #include <mm/mem.h>
+#include <mm/pmm.h>
 
 // page.c - Paging for the i386 architecture
 
@@ -28,26 +29,26 @@ void _swap_pd(uintptr_t phys_addr)
 
 void page_init(uintptr_t pd)
 {
-	
+
 }
 
 uintptr_t create_page_dir(uintptr_t* temp_addr)
 {
-	uaddr_t* page_frame = get_frame(); // Grab a new page frame
+	uaddr_t* page_frame = pmm_alloc(0); // Grab a new page frame
 	map_page(temp_addr, page_frame, 3); // Set a page table so we can use this
 	memset(temp_addr, 0, (size_t)0x1000); // Fill in all the initial values of the table to zero.
 	temp_addr[1023] = (0xFFC00000 | 3); // Set up a recursive mapping for the table
-	
+
 	_flush_tlb(temp_addr);
 	return (uintptr_t)page_frame;
 }
 
 uintptr_t create_page_table(uintptr_t* temp_addr)
 {
-	uaddr_t* page_frame = get_frame(); // Grab a new page frame
+	uaddr_t* page_frame = pmm_alloc(0); // Grab a new page frame
 	map_page(temp_addr, page_frame, 3); // Set a page table so we can use this
 	memset(temp_addr, 0, (size_t)0x1000); // Fill in all the initial values of the table to zero.
-	
+
 	_flush_tlb(temp_addr);
 	return (uintptr_t)page_frame;
 }
@@ -98,7 +99,7 @@ void set_page_table(uintptr_t virt_addr, uintptr_t phys_addr, uint32_t flags)
 
 void alloc_page_table(uintptr_t virt_addr, uint32_t flags)
 {
-	uintptr_t phys_addr = get_frame(); // Grab a page frame
+	uintptr_t phys_addr = pmm_alloc(0); // Grab a page frame
 	set_page_table(virt_addr, phys_addr, flags); // Set the page frame accordingly
 	uintptr_t* pt = ((uintptr_t *)(0xFFC00000 | ((virt_addr >> 12) * 4) & 0x3FF000)); // Get the virtual mapping of this page table
 	/*for(int i=0; i<=0x3FF; i++){
@@ -111,7 +112,7 @@ void dealloc_page_table(uintptr_t virt_addr)
 	virt_addr &= ~(0xFFF); // Page-align addresses
 	uintptr_t* this_pt = (uintptr_t *) (0xFFFFF000 | ((virt_addr >> 22) * 4)); // Select address for the page table
 	uintptr_t phys_addr = *this_pt; // Set a pointer for this page table's physical address
-	free_frame(phys_addr); // Pass the physical address so that it can be freed.
+	pmm_free(phys_addr); // Pass the physical address so that it can be freed.
 	*this_pt = 0; // Set our deceased page table to empty
 }
 
@@ -126,7 +127,7 @@ void set_page(uintptr_t virt_addr, uintptr_t phys_addr, uint32_t flags)
 
 void alloc_page(uintptr_t virt_addr, uint32_t flags)
 {
-	uintptr_t phys = get_frame();
+	uintptr_t phys = pmm_alloc(0);
 	set_page(virt_addr, phys, flags);
 }
 
@@ -137,7 +138,7 @@ void dealloc_page(uintptr_t virt_addr)
 	uint32_t pte = ((virt_addr >> 12) & 0x3FF);
 	uaddr_t phys_addr = pt[pte];
 	phys_addr &= ~(0xFFF);
-	free_frame(phys_addr);
+	pmm_free(phys_addr);
 	pt[pte] = (uaddr_t)0;
 }
 
