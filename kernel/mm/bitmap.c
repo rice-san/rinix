@@ -7,10 +7,6 @@
 #include <mm/mem.h>
 
 #include <rinix/debug.h>
-/*
-#include <arch/multiboot.h>
-#include <arch/multiboot_stub.h>
-*/
 #include <mm/mmap.h>
 
 #define HIGH_BIT (1 << (8 - 1))

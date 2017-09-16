@@ -1,14 +1,12 @@
 #include <mm/bitmap.h>
 #include <mm/kmem.h>
 #include <mm/mem.h>
+#include <mm/mmap.h>
 #include <mm/pmm.h>
 
 #include <arch/info.h>
 #include <arch/page.h>
 
-#include <arch/multiboot.h>
-#include <arch/multiboot_stub.h>
-#include <mm/mmap.h>
 #include <rinix/pause.h>
 #include <rinix/timer.h>
 
@@ -35,36 +33,24 @@ void kernel_bitmap_init()
 
 	unsigned long try_bitmap_start = 0;
 	unsigned long try_bitmap_end = 0;
-	printd("Multiboot Info: %x\n", &multiboot_info);
-	_debug( term_setcolor(make_color(COLOR_CYAN, COLOR_BLACK)) );
-	printd("Memory Map At: %x\n", multiboot_info->mmap_addr);
-	printd("Memory Map Length: %x\n", multiboot_info->mmap_length);
-	if((multiboot_info->flags & 0x40))
-	{
-		if(multiboot_info->flags & 1)
-		{
-			printd("Memory Length: %lK\n", ((memory_length = (multiboot_info->mem_lower)+(multiboot_info->mem_upper))));
-			bitmap_size = (memory_length / 0x4) + 1;
-			printd("Kernel Bitmap Size: %x\n", bitmap_size);
-		}
+	int mmap_region = 0;
 		// Find place for bitmap
-		multiboot_memory_map_t* mmap = multiboot_info->mmap_addr;
 		printd("Memory Map Info: \n==================\n");
 		unsigned long usable_mem = 0;
 		unsigned long unusable_mem = 0;
-		while(mmap < multiboot_info->mmap_addr + multiboot_info->mmap_length) {
-			if(mmap->type == 1)
+		while(mmap.regions[mmap_region].size > 0) {
+			if(mmap.regions[mmap_region].type == MMAP_USABLE)
 			{
-				usable_mem += mmap->len;
+				usable_mem += mmap.regions[mmap_region].size;
 				_debug( term_setcolor( make_color(COLOR_GREEN, COLOR_BLACK)));
 			}
 			else
 			{
-				unusable_mem += mmap->len;
+				unusable_mem += mmap.regions[mmap_region].size;
 				_debug( term_setcolor( make_color(COLOR_RED, COLOR_BLACK)));
 			}
-			printd("Memory Map: start=%x length=%x size=%x value=%x end=%x\n", (section_start = (unsigned long)mmap->addr), (section_size = (unsigned long)mmap->len), (unsigned long)mmap->size, mmap->type, (section_end = (unsigned long)mmap->addr + mmap->len - 1));
-			if( section_size > bitmap_size  && mmap->type == 1)
+			printd("Memory Map: start=%x length=%x value=%x end=%x\n", (section_start = (unsigned long)mmap.regions[mmap_region].start), (section_size = (unsigned long)mmap.regions[mmap_region].size), mmap.regions[mmap_region].type, (section_end = (unsigned long)mmap.regions[mmap_region].start + mmap.regions[mmap_region].size - 1));
+			if( section_size > bitmap_size  && mmap.regions[mmap_region].type == MMAP_USABLE)
 			{
 				short int newline = 0;
 				if( UNMAP_KERNEL(&kernel_start) >= section_start && UNMAP_KERNEL(&kernel_start) <= section_end)
@@ -92,20 +78,9 @@ void kernel_bitmap_init()
 					printd("");
 				}
 			}
-			mmap = (multiboot_memory_map_t*) ( (unsigned int)mmap + mmap->size + sizeof(unsigned int) );
+			mmap_region++;
 			_debug( term_setcolor( make_color(COLOR_LIGHT_GREY, COLOR_BLACK)));
 		}
-	}
-	else if((multiboot_info->flags & 1))
-	{
-		printd("Memory Length: %x\n", multiboot_info->mem_upper);
-	}
-	else
-	{
-		puts("Fatal Error: No valid memory info. Halted.");
-		for(;;);
-	}
-	_debug( term_setcolor(make_color(COLOR_LIGHT_GREY, COLOR_BLACK)) );
 }
 
 void mem_init(void)

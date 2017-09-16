@@ -4,9 +4,6 @@
 #include <string.h>
 
 #include <arch/info.h>
-// TODO: Remove these multiboot related things from architecture independent code
-#include <arch/multiboot.h>
-#include <arch/multiboot_stub.h>
 
 #include <mm/bitmap.h>
 #include <mm/buddy.h>
@@ -22,7 +19,6 @@
 #include <rinix/vga.h>
 #include <rinix/rinix.h>
 
-#define ADJUST_MMAP(x) ((multiboot_memory_map_t *)(0xC0400000 | ((unsigned int)x & 0xFFF)))
 #define ADJUST_KERNEL(x) ((((unsigned long)x) - (unsigned long)0xC0000000))
 
 inline uint8_t _check_frame(uintptr_t frame)
@@ -45,12 +41,7 @@ void initk(uint32_t initialPD)
 	printd(" (Debug Mode)");
 	printf("\n");
 	printd("sizeof int: %d\nsizeof long: %d\nsizeof char: %d\nsizeof int*: %d\n", sizeof(int), sizeof(long), sizeof(char), sizeof(int*));
-	printd("Multiboot is at: %x\n", multiboot_info);
 	arch_init();	// Perform architecture dependent initialization./
-	printf("Multiboot is at: %x\n", multiboot_info);
-	if(multiboot_info != 0){
-		printd("Multiboot Info is non-null\n");
-	}
 	// Initialize the Memory Allocators with the Multiboot Information
 	page_init(initialPageDirectory);
 	//flash_screen();
