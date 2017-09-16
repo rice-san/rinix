@@ -7,7 +7,7 @@
 #include <mm/mem.h>
 
 #include <rinix/debug.h>
-#include <rinix/multiboot.h>
+#include <arch/multiboot.h>
 
 #define HIGH_BIT (1 << (8 - 1))
 #define UNMAP_KERNEL(x) (((unsigned long) (x)) - 0xC0000000)

@@ -1,7 +1,7 @@
 #ifndef __MM_PMM_H
 #define __MM_PMM_H
 
-#include <rinix/multiboot.h>
+#include <arch/multiboot.h>
 #include <stdint.h>
 
 #define PMM_BLOCK_ORDER 1 // Define as such for now
@@ -25,7 +25,7 @@ typedef struct pmm_block{
 
 
 
-void __pmm_init(multiboot_info_t*);  // Initialize the pmm.
+void __pmm_init();  // Initialize the pmm.
 void _pmm_alloc(pmm_block_t*, unsigned int);  // Allocate a block of page frames
 uintptr_t pmm_alloc(unsigned int size); // Same as the previous but also allocates the pmm_block structure
 int pmm_free(uintptr_t); // Free a block of page frames

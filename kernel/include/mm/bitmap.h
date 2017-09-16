@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include <rinix/multiboot.h>
+#include <arch/multiboot.h>
 
 int create_bitmap(uintptr_t, uint64_t, multiboot_info_t*);
 int free_frame(uintptr_t);

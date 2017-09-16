@@ -2,7 +2,7 @@
 #define _MM_BUDDY_H
 
 #include <arch/info.h>
-#include <rinix/multiboot.h>
+#include <arch/multiboot.h>
 
 #define BUDDY_MAX_ORDER 7
 // buddy.h - Buddy Allocator

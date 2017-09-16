@@ -6,7 +6,8 @@
 #include <arch/info.h>
 #include <arch/page.h>
 
-#include <rinix/multiboot.h>
+#include <arch/multiboot.h>
+#include <mm/mmap.h>
 #include <rinix/pause.h>
 #include <rinix/timer.h>
 
@@ -106,9 +107,10 @@ void kernel_bitmap_init(multiboot_info_t* mbd)
 	_debug( term_setcolor(make_color(COLOR_LIGHT_GREY, COLOR_BLACK)) );
 }
 
-void mem_init(multiboot_info_t* mbd)
+void mem_init(void)
 {
-	__pmm_init(mbd);
+	create_mmap();
+	__pmm_init();
 	kmem_init();
 }
 

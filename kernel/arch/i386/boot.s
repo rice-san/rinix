@@ -1,4 +1,5 @@
 .global loader
+.global multiboot_info
 
 # Declare the constants for the multiboot header
 .set ALIGN,			1<<0						# align loaded modules on page boundaries
@@ -30,7 +31,7 @@ stack_top:
 _initialPD:
     #Blank Page Directory
     .space 0x1000, 0x00
-    
+
 _initialPT:
     #A Single Page Table can be used by both lower and upper parts of page directory
     .space 0x1000, 0x00
@@ -51,7 +52,7 @@ loader:
 
     #Move stack to virtual address
     addl $KERNEL_VIRTUAL_BASE, %esp
-    
+
     call _start
 
 
@@ -73,23 +74,23 @@ init_paging:
     subl $KERNEL_VIRTUAL_BASE, %ecx
     and $0xFFFFF000, %ecx
     or $0x3, %ecx
-    
+
     #Insert Identity Mapped Memory
     movl %ecx, (%eax)
-    
+
     #Insert High Memory Page
     movl $KERNEL_PT_NUMBER, %edx
     movl %ecx, (%eax, %edx, 4)
-    
+
     #Create Recursive PDE
     movl %eax, %ecx
     and $0xFFFFF000, %ecx
     or $0x3, %ecx
-    
+
     #Insert Recursive Mapping Page
     movl $0x3FF, %edx
     movl %ecx, (%eax, %edx, 4)
-    
+
     #Load PD
     movl %eax, %cr3
 
@@ -106,31 +107,31 @@ init_paging:
     ret
 
 _populatePT:
-    
+
     #Save the registers
     push %eax
     push %ebx
     push %ecx
     push %edx
-    
+
     movl $_initialPT, %ecx
     subl $KERNEL_VIRTUAL_BASE, %ecx
-    
+
     #The loop incrementor
     movl $0, %eax
 _ptLoop:
-    
+
     #Create the PTE in edx
     movl %eax, %edx
     shl $12, %edx
     or $3, %edx
-    
+
     movl %edx, (%ecx, %eax, 4)
-    
+
     inc %eax
     cmp $1024, %eax
     jl _ptLoop
-    
+
     #Restore register values
     pop %edx
     pop %ecx
@@ -144,19 +145,22 @@ _start:
 	# Pass the address of the initial page table on the stack
 	push $_initialPD
 	# Pass the multiboot information onto the stack.
-	push %ebx
-	
-	
-	
+	#push %ebx
+
+	# Instead put multiboot in it's variable
+	movl %ebx, multiboot_info
+
+
+
 	# Initialize the core kernel before running global constructors
 	call initk
-	
+
 	# Call the global constructors.
 	call _init
-	
+
 	# Transfer control to the main kernel.
 	call kmain
-	
+
 	# Hang if kmain returns unexpectedly (it shouldn't do that!)
 	cli
 	hlt

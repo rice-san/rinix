@@ -2,6 +2,7 @@
 //#include <mm/slab.h>
 
 #include <stdint.h>
+#include <arch/multiboot_stub.h>
 
 // Physical Memory Manager
 
@@ -12,8 +13,8 @@ extern void kernel_bitmap_init();
 extern uintptr_t get_frame(void);
 
 
-void __pmm_init(multiboot_info_t* mbd){
-  kernel_bitmap_init(mbd);
+void __pmm_init(void){
+  kernel_bitmap_init(multiboot_info);
 }
 
 void _pmm_alloc(pmm_block_t* blk, unsigned int size){

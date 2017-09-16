@@ -4,6 +4,9 @@
 #include <string.h>
 
 #include <arch/info.h>
+// TODO: Remove these multiboot related things from architecture independent code
+#include <arch/multiboot.h>
+#include <arch/multiboot_stub.h>
 
 #include <mm/bitmap.h>
 #include <mm/buddy.h>
@@ -12,7 +15,6 @@
 
 #include <rinix/arch_init.h>
 #include <rinix/debug.h>
-#include <rinix/multiboot.h>
 #include <rinix/pause.h>
 #include <rinix/version.h>
 #include <rinix/tty.h>
@@ -32,29 +34,29 @@ uint32_t initialPageDirectory;
 
 //extern void panic_splash(void);
 
-void initk(multiboot_info_t *mbd, uint32_t initialPD)
+void initk(uint32_t initialPD)
 {
 	initialPageDirectory = initialPD;
 	term_init();
-	
+
 	// Put the Copyright Notice
-	puts("(c) Copyright 2015 Royston Martha. All Rights Reserved.");
+	puts("(c) Copyright 2017 Royston Martha. All Rights Reserved.");
 	printf("rinix-%s v%d.%d.%d", ARCH_NAME, _RINIX_VERSION_MAJOR, _RINIX_VERSION_MINOR, _RINIX_VERSION_RELEASE);
 	printd(" (Debug Mode)");
 	printf("\n");
 	printd("sizeof int: %d\nsizeof long: %d\nsizeof char: %d\nsizeof int*: %d\n", sizeof(int), sizeof(long), sizeof(char), sizeof(int*));
-	printd("Multiboot is at: %x\n", mbd);
+	printd("Multiboot is at: %x\n", multiboot_info);
 	arch_init();	// Perform architecture dependent initialization./
-	printf("Multiboot is at: %x\n", mbd);
-	if(mbd != 0){
+	printf("Multiboot is at: %x\n", multiboot_info);
+	if(multiboot_info != 0){
 		printd("Multiboot Info is non-null\n");
 	}
 	// Initialize the Memory Allocators with the Multiboot Information
 	page_init(initialPageDirectory);
 	//flash_screen();
-	mem_init(mbd);
+	mem_init();
 	//flash_screen();
-	
+
 	arch_finish_init();
 }
 
