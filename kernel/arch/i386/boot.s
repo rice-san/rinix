@@ -147,7 +147,7 @@ _start:
 	# Pass the multiboot information onto the stack.
 	#push %ebx
 
-	# Instead put multiboot in it's variable
+	# Instead put multiboot in it's variable (found in arch/i386/multiboot_stub.h)
 	movl %ebx, multiboot_info
 
 

@@ -7,6 +7,7 @@
 #include <arch/page.h>
 
 #include <arch/multiboot.h>
+#include <arch/multiboot_stub.h>
 #include <mm/mmap.h>
 #include <rinix/pause.h>
 #include <rinix/timer.h>
@@ -22,7 +23,7 @@
 int bitmap_size = 0;
 
 
-void kernel_bitmap_init(multiboot_info_t* mbd)
+void kernel_bitmap_init()
 {
 	kernel_length = (&kernel_end - &kernel_start);
 
@@ -34,24 +35,24 @@ void kernel_bitmap_init(multiboot_info_t* mbd)
 
 	unsigned long try_bitmap_start = 0;
 	unsigned long try_bitmap_end = 0;
-	printd("Multiboot Info: %x\n", &mbd);
+	printd("Multiboot Info: %x\n", &multiboot_info);
 	_debug( term_setcolor(make_color(COLOR_CYAN, COLOR_BLACK)) );
-	printd("Memory Map At: %x\n", mbd->mmap_addr);
-	printd("Memory Map Length: %x\n", mbd->mmap_length);
-	if((mbd->flags & 0x40))
+	printd("Memory Map At: %x\n", multiboot_info->mmap_addr);
+	printd("Memory Map Length: %x\n", multiboot_info->mmap_length);
+	if((multiboot_info->flags & 0x40))
 	{
-		if(mbd->flags & 1)
+		if(multiboot_info->flags & 1)
 		{
-			printd("Memory Length: %lK\n", ((memory_length = (mbd->mem_lower)+(mbd->mem_upper))));
+			printd("Memory Length: %lK\n", ((memory_length = (multiboot_info->mem_lower)+(multiboot_info->mem_upper))));
 			bitmap_size = (memory_length / 0x4) + 1;
 			printd("Kernel Bitmap Size: %x\n", bitmap_size);
 		}
 		// Find place for bitmap
-		multiboot_memory_map_t* mmap = mbd->mmap_addr;
+		multiboot_memory_map_t* mmap = multiboot_info->mmap_addr;
 		printd("Memory Map Info: \n==================\n");
 		unsigned long usable_mem = 0;
 		unsigned long unusable_mem = 0;
-		while(mmap < mbd->mmap_addr + mbd->mmap_length) {
+		while(mmap < multiboot_info->mmap_addr + multiboot_info->mmap_length) {
 			if(mmap->type == 1)
 			{
 				usable_mem += mmap->len;
@@ -77,7 +78,7 @@ void kernel_bitmap_init(multiboot_info_t* mbd)
 						{
 							bitmap_place = ROUND_UP(UNMAP_KERNEL(&kernel_end));
 							printd("\nPut the bitmap here: %x\n", bitmap_place);
-							create_bitmap(bitmap_place, bitmap_size, mbd);
+							create_bitmap(bitmap_place, bitmap_size);
 							break;
 						}
 					}
@@ -95,9 +96,9 @@ void kernel_bitmap_init(multiboot_info_t* mbd)
 			_debug( term_setcolor( make_color(COLOR_LIGHT_GREY, COLOR_BLACK)));
 		}
 	}
-	else if((mbd->flags & 1))
+	else if((multiboot_info->flags & 1))
 	{
-		printd("Memory Length: %x\n", mbd->mem_upper);
+		printd("Memory Length: %x\n", multiboot_info->mem_upper);
 	}
 	else
 	{

@@ -23,4 +23,6 @@ typedef struct mmap_chunk{
 
 int create_mmap(void);
 
+mmap_t mmap;
+
 #endif /* _MM_MMAP_H */

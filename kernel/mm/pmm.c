@@ -14,7 +14,7 @@ extern uintptr_t get_frame(void);
 
 
 void __pmm_init(void){
-  kernel_bitmap_init(multiboot_info);
+  kernel_bitmap_init();
 }
 
 void _pmm_alloc(pmm_block_t* blk, unsigned int size){

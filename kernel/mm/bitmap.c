@@ -7,7 +7,11 @@
 #include <mm/mem.h>
 
 #include <rinix/debug.h>
+/*
 #include <arch/multiboot.h>
+#include <arch/multiboot_stub.h>
+*/
+#include <mm/mmap.h>
 
 #define HIGH_BIT (1 << (8 - 1))
 #define UNMAP_KERNEL(x) (((unsigned long) (x)) - 0xC0000000)
@@ -108,7 +112,7 @@ uintptr_t get_frame(void)
 }
 
 
-int create_bitmap(uintptr_t loc, uint64_t size, multiboot_info_t* mbd)
+int create_bitmap(uintptr_t loc, uint64_t size)
 {
     kernel_bitmap.ptr = loc;
     kernel_bitmap.length = size;
@@ -118,25 +122,25 @@ int create_bitmap(uintptr_t loc, uint64_t size, multiboot_info_t* mbd)
     int section_start = 0;
     int section_size = 0;
     int section_end = 0;
-	multiboot_memory_map_t* mmap = mbd->mmap_addr;
+		int mmap_region = 0;
 	printd("Memory Map Info: \n==================\n");
 	uint32_t i = 0;
-	while(mmap < mbd->mmap_addr + mbd->mmap_length) {
-		if(mmap->type == 1)
+	while(mmap.regions[mmap_region].size > 0) {
+		if(mmap.regions[mmap_region].type == MMAP_USABLE)
 		{
-			_debug( term_setcolor( make_color(COLOR_GREEN, COLOR_BLACK))); 
+			_debug( term_setcolor( make_color(COLOR_GREEN, COLOR_BLACK)));
 		}
 		else
 		{
 			_debug( term_setcolor( make_color(COLOR_RED, COLOR_BLACK)));
 		}
-		section_start = (unsigned long)mmap->addr;
-		section_size = (unsigned long)mmap->len;
-		section_end = (unsigned long)mmap->addr + mmap->len - 1;
+		section_start = (unsigned long)mmap.regions[mmap_region].start;
+		section_size = (unsigned long)mmap.regions[mmap_region].size;
+		section_end = (unsigned long)mmap.regions[mmap_region].start + mmap.regions[mmap_region].size - 1;
 		unsigned long bitmap_sec_start = section_start/0x1000;
 		unsigned long bitmap_sec_length = section_size/0x1000;
 		unsigned long bitmap_sec_end = section_end/0x1000;
-		printd("Memory Map: start=%x length=%x size=%x value=%x end=%x\n", section_start, section_size, (unsigned long)mmap->size, mmap->type, section_end);
+		printd("Memory Map: start=%x length=%x value=%x\n", section_start, section_size, mmap.regions[mmap_region].type);
 		_debug( pause(); );
 		if((section_start % 0x1000) > 0)
 		{
@@ -146,7 +150,7 @@ int create_bitmap(uintptr_t loc, uint64_t size, multiboot_info_t* mbd)
 		i = bitmap_sec_start;
 		while(i <= ((bitmap_sec_end) ))
 		{
-			if(mmap->type == 1)
+			if(mmap.regions[mmap_region].type == MMAP_USABLE)
 			{
 				if ((kernel_bitmap.ptr[i/8] >> (ADDR_BITS - i)) & 1) {
 					kernel_bitmap.ptr[i/8] &= (~(HIGH_BIT >> i % 8)); //Set to O (free)
@@ -158,26 +162,26 @@ int create_bitmap(uintptr_t loc, uint64_t size, multiboot_info_t* mbd)
 			}
 			i++;
 		}
-		mmap = (multiboot_memory_map_t*) ( (unsigned int)mmap + mmap->size + sizeof(unsigned int) );
+		mmap_region++;
 		_debug( term_setcolor( make_color(COLOR_LIGHT_GREY, COLOR_BLACK)));
 	}
 	// Start marking used pages
-	
+
 	// Mark memory below 1MB as used, 1MB = 256 * 4K
 	// Since the first 1MB is a very even size, we can cheat and use memset
 	memset(kernel_bitmap.ptr, ~(0), (size_t)((0x100000/0x1000)/8) );
-	
+
 	// Mark kernel memory as used
 	for(unsigned int i = UNMAP_KERNEL(&kernel_start); i <= UNMAP_KERNEL(&kernel_end); i +=0x1000)
 	{
 		_mark_frame_used((i/0x1000)/8, (i/0x1000)%8);
 	}
-	
+
 	// Mark this bitmap as used
 	for(unsigned int i = kernel_bitmap.ptr; i <= (kernel_bitmap.ptr + kernel_bitmap.length); i +=0x1000)
 	{
 		_mark_frame_used((i/0x1000)/8, (i/0x1000)%8);
 	}
-	
+
 	return success;
 }
