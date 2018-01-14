@@ -36,6 +36,9 @@ _initialPT:
     #A Single Page Table can be used by both lower and upper parts of page directory
     .space 0x1000, 0x00
 
+_freeSpace:
+		#Free space for use by the memory manager and etc.
+		.space 0x1000, 0x00
 
 # Enable Paging Time!
 .section .text
