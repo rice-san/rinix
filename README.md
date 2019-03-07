@@ -13,19 +13,11 @@ Basically just download the repo and place anywhere you like.
 
 #### Requirements ####
 
-Hopefully you have a linux machine to run and build this, I haven't tested this anywhere else.
+Currently configured to work on a Mac with MacPorts. Shell scripts need to be modified to compile on linux, for the most part, removing the "g" prefix should do it.
 
 To build the operating system you have to install a **cross-compiler** and add it to you PATH shell variable. The cross compiler should be **i686-elf**.
 
-Also you should install **grub-mkrescue** and **qemu**.
-
-Run this in the shell:
-
-` sudo apt-get install grub-mkrescue `
-
-` sudo apt-get install qemu-system-i386 `
-
-You should be all set after that.
+For the most part referring to osdev.org should give you what you need.
 
 #### Building and running ####
 
