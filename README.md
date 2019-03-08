@@ -49,8 +49,3 @@ To do this pass the flag '-d' like this:
 ### Contribution guidelines ###
 
 Because this a personal project, I am currently not accepting contributions. If you have a suggestion for some reason, I guess you could send it to me. Somehow.
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
